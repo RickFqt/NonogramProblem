@@ -36,8 +36,6 @@ std::vector<bool> convert_number(int n_sorteado, int quadrados_vazios, int bloco
 
 
     for(int i{0}; i <= quadrados_vazios; ++i){
-        // std::cout << "quadrados_vazios - i = " << quadrados_vazios - i << std::endl;
-        // std::cout << "blocos_preenchidos - 1 = " << blocos_preenchidos - 1 << std::endl << std::endl;
 
         if(blocos_preenchidos == 0){
             pos_blocos[i] = false;
@@ -52,15 +50,8 @@ std::vector<bool> convert_number(int n_sorteado, int quadrados_vazios, int bloco
             pos_blocos[i] = true;
         }
 
-        // if(pos_blocos[i]){
-        //     std::cout << "1 ";
-        // }
-        // else{
-        //     std::cout << "0 ";
-        // }
     }
 
-    // std::cout << "AAAA" << std::endl;
 
     int index_bloco = 0;
     int index_retorno = 0;
@@ -76,19 +67,6 @@ std::vector<bool> convert_number(int n_sorteado, int quadrados_vazios, int bloco
     
         ++index_retorno;
     }
-
-    // std::cout << std::endl;
-
-    // for(int i{0}; i < retorno.size(); ++i){
-    //     if(retorno[i]){
-    //         std::cout << "1 " ;
-    //     }
-    //     else{
-    //         std::cout << "0 " ;
-    //     }
-    // }
-    
-    // std::cout << std::endl;
 
     return retorno;
     
@@ -136,14 +114,16 @@ int main(){
     int n_linhas, n_colunas;
     std::cin >> n_linhas >> n_colunas;
 
+
+    std::vector<std::vector<int>> linhas; // Guarda o valor dos blocos de cada linha
+    std::vector<int> soma_linhas(n_linhas); // Guarda a soma do tamanho dos blocos de cada linha
+    std::vector<std::vector<int>> colunas; // Guarda o valor dos blocos de cada coluna
+    std::vector<int> soma_colunas(n_colunas); // Guarda a soma do tamanho dos blocos de cada coluna
+
     std::string entrada;
     std::getline(std::cin, entrada);
 
-    std::vector<std::vector<int>> linhas;
-    std::vector<int> soma_linhas(n_linhas);
-    std::vector<std::vector<int>> colunas;
-    std::vector<int> soma_colunas(n_colunas);
-
+    // Lê as linhas
     for(int i{0}; i < n_linhas; ++i){
         std::getline(std::cin, entrada);
         linhas.push_back(tokenize(entrada));
@@ -152,6 +132,7 @@ int main(){
         soma_linhas[i] = soma_vetor(linhas[i]);
     }
 
+    // Lê as colunas
     for(int i{0}; i < n_colunas; ++i){
         std::getline(std::cin, entrada);
         colunas.push_back(tokenize(entrada));
@@ -168,75 +149,51 @@ int main(){
     // 1 --> Célula colorida
     std::vector<std::vector<int>> nonograma(n_linhas, std::vector<int>(n_colunas, -1));
 
-    // for(int i{0}; i < n_linhas; ++i){
-    //     for(int j{0}; j < n_colunas; ++j){
-    //         // if(nonograma[i][j] == 1){
-    //         //     std::cout << "O";
-    //         // }
-    //         // else{
-    //         //     std::cout << " "; 
-    //         // }
-    //         std::cout << nonograma[i][j] << " "; 
-    //     }
-    //     std::cout << std::endl;
-    // }
-
 
     // Algoritmo Heurístico :D
 
     // Enquanto não estiver completo:
     //      Escolher a proxima linha
-    //      Preencher a linha corretamente de forma a minimizar conflitos
+    //      Fazer 10 construcoes para a linha corretamente sem se preocupar com as colunas
+    //      Escolher a linha construída que menos causa conflito com as colunas
 
     // Enquanto não estiver completo:
     for(int i{0}; i < n_linhas; ++i){
         //Preencher a linha
-            // BlocosVazios = n_colunas - TotalBlocosPreenchidos
 
-            std::vector<bool> linha(n_colunas);
-            if(soma_linhas[i] != 0){
+        
+        std::vector<bool> linha(n_colunas); // Linha a ser construída
+        if(soma_linhas[i] != 0){
+            
+            int quadrados_vazios = n_colunas - soma_linhas[i]; // Número de quadrados vazios necessários nessa linha
+            int combinao = combinacao(quadrados_vazios + 1, linhas[i].size()); // Número máximo de possíveis alocações dos blocos
 
-                int quadrados_vazios = n_colunas - soma_linhas[i];
-                // std::cout << quadrados_vazios << " " << linhas[i].size() << std::endl;
-                int combinao = combinacao(quadrados_vazios + 1, linhas[i].size());
+            int sorteado = rand() % combinao + 1;
 
-                int sorteado = rand() % combinao + 1;
+            // Converte o número sorteado à respectiva alocação de blocos
+            linha = convert_number(sorteado, quadrados_vazios, linhas[i].size(), n_colunas, linhas[i]);
 
-                // FUNCAO BLAU UAU
-                linha = convert_number(sorteado, quadrados_vazios, linhas[i].size(), n_colunas, linhas[i]);
-                // for(int j{0}; j < n_colunas; ++j){
-                //     if(linha[j]){
+        }
 
-                //         std::cout << 1 << " ";
-                //     }
-                //     else{
-                //         std::cout << 0 << " ";
-                //     }
-                // }
-                // std::cout << std::endl;
+        // Escolhe a linha com menor conflito
+        // std::vector<bool> linha_escolhida = escolher_linha(linhas)
+
+
+
+        // Preenche o nonograma com a linha escolhida
+        for(int j{0}; j < n_colunas; ++j){
+            if(linha[j]){
+
+                nonograma[i][j] = 1;
             }
-
-
-
-            for(int j{0}; j < n_colunas; ++j){
-                if(linha[j]){
-
-                    nonograma[i][j] = 1;
-                }
-                else{
-                    nonograma[i][j] = 0;
-                }
+            else{
+                nonograma[i][j] = 0;
             }
-            // std::cout << "asdawsdaw" << std::endl;
+        }
 
-
-
-
-            // Simula 10 vezes?
-            // Pega a melior
     }
-    // std::cout << "asdawsdaw2" << std::endl;
 
+    // Print do nonograma resultante
     for(int i{0}; i < n_linhas; ++i){
         for(int j{0}; j < n_colunas; ++j){
             if(nonograma[i][j] == 1){
@@ -245,7 +202,6 @@ int main(){
             else{
                 std::cout << " "; 
             }
-            // std::cout << nonograma[i][j] << " "; 
         }
         std::cout << std::endl;
     }
