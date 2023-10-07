@@ -81,9 +81,12 @@ int soma_vetor(std::vector<int> vetor){
     return total;
 }
 
+
 int funcaodoida(std::vector<std::vector<int>>linhas,
                 std::vector<std::vector<int>>colunas,
                 std::vector<std::vector<int>>nonograma,
+                std::vector<bool>linha_analisada, 
+                int idx_linha_analisada,
                 int linhas_preenchidas){
     
     int sum1 = 0;
@@ -96,19 +99,53 @@ int funcaodoida(std::vector<std::vector<int>>linhas,
         }
 
         for(int j{0}; j < linhas_preenchidas; ++j){
+            if(j == idx_linha_analisada){
+                sum12 += linha_analisada[j];
+            }
+            else if(colunas[i][j] != -1){
+                sum12 += nonograma[i][j];
+            }
+        }
 
+        sum1 += abs(sum11 - sum12);
+    }
+
+    // int sum2 = 0;
+    // int sum21;
+
+    // for(int i{0}; i < colunas.size(); ++i){
+
+    // }
+
+    return sum1;
+}
+
+std::vector<bool> escolher_linha(std::vector<std::vector<bool>>linhas_construidas, std::vector<std::vector<int>>linhas,
+                                 std::vector<std::vector<int>>colunas, std::vector<std::vector<int>>nonograma,
+                                 int idx_linha_analisada, int linhas_preenchidas){
+    int min = INT_MAX;
+    int i_min = 0;
+    int current;
+
+    for(int i{0}; i < linhas_construidas.size(); ++i){
+        current = funcaodoida(linhas, colunas, nonograma, linhas_construidas[i], idx_linha_analisada, linhas_preenchidas);
+        if (current < min){
+            i_min = i;
+            min = current;
         }
     }
 
-    int sum2 = 0;
-    int sum21;
-}
+    return linhas_construidas[i_min];
 
+}
 
 int main(){
 
     // Seed aleatória
     srand(time(nullptr));
+
+    // obtain a time-based seed:
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 
     // Ler um arquivo aí
     int n_linhas, n_colunas;
@@ -162,27 +199,44 @@ int main(){
         //Preencher a linha
 
         
-        std::vector<bool> linha(n_colunas); // Linha a ser construída
+        std::vector<std::vector<bool>> linhas_construidas(10, std::vector<bool>(n_colunas));
+        int quadrados_vazios = n_colunas - soma_linhas[i]; // Número de quadrados vazios necessários nessa linha
+        int combinao = combinacao(quadrados_vazios + 1, linhas[i].size()); // Número máximo de possíveis alocações dos blocos
+
         if(soma_linhas[i] != 0){
             
-            int quadrados_vazios = n_colunas - soma_linhas[i]; // Número de quadrados vazios necessários nessa linha
-            int combinao = combinacao(quadrados_vazios + 1, linhas[i].size()); // Número máximo de possíveis alocações dos blocos
+            std::vector<int> numeros_sorteados;
 
-            int sorteado = rand() % combinao + 1;
+            for(int j{1}; j <= combinao; ++j){
+                numeros_sorteados.push_back(j);
+            }
+            std::shuffle(numeros_sorteados.begin(), numeros_sorteados.end(), std::default_random_engine(seed));
 
-            // Converte o número sorteado à respectiva alocação de blocos
-            linha = convert_number(sorteado, quadrados_vazios, linhas[i].size(), n_colunas, linhas[i]);
+            for(int j{0}; j < std::min((int)numeros_sorteados.size(), 10); ++j){
+
+                int sorteado = numeros_sorteados[j];
+                // Converte o número sorteado à respectiva alocação de blocos
+                linhas_construidas[j] = convert_number(sorteado, quadrados_vazios, linhas[i].size(), n_colunas, linhas[i]);
+            }
+
 
         }
 
+        std::vector<bool> linha_escolhida;
+        if(soma_linhas[i] == 0){
+            linha_escolhida = linhas_construidas[0];
+        }
+        else{
+
+            linha_escolhida = escolher_linha(linhas_construidas, linhas, colunas, nonograma, i, i);
+        }
         // Escolhe a linha com menor conflito
-        // std::vector<bool> linha_escolhida = escolher_linha(linhas)
 
 
 
         // Preenche o nonograma com a linha escolhida
         for(int j{0}; j < n_colunas; ++j){
-            if(linha[j]){
+            if(linha_escolhida[j]){
 
                 nonograma[i][j] = 1;
             }
