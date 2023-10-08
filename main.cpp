@@ -34,7 +34,7 @@ std::vector<bool> convert_number(int n_sorteado, int quadrados_vazios, int bloco
     std::vector<bool> pos_blocos(quadrados_vazios + 1);
     std::vector<bool> retorno(largura);
 
-
+    // Converte o numero sorteado para o formato de distribuicao de blocos associado
     for(int i{0}; i <= quadrados_vazios; ++i){
 
         if(blocos_preenchidos == 0){
@@ -55,6 +55,8 @@ std::vector<bool> convert_number(int n_sorteado, int quadrados_vazios, int bloco
 
     int index_bloco = 0;
     int index_retorno = 0;
+
+    // Converte a linha resultante para uma linha própria do nonograma
     for(int i{0}; i < pos_blocos.size(); ++i){
         if(pos_blocos[i]){
             for(int j{0}; j < blocos[index_bloco]; ++j){
@@ -67,6 +69,7 @@ std::vector<bool> convert_number(int n_sorteado, int quadrados_vazios, int bloco
     
         ++index_retorno;
     }
+
 
     return retorno;
     
@@ -94,16 +97,16 @@ int funcaodoida(std::vector<std::vector<int>>linhas,
 
     for(int i{0}; i < colunas.size(); ++i){
         sum11 = 0; sum12 = 0;
-        for(int j{0}; j < colunas[i].size(); ++j){
-            sum11 += colunas[i][j];
-        }
+        sum11 += soma_vetor(colunas[i]);
 
-        for(int j{0}; j < linhas_preenchidas; ++j){
+        for(int j{0}; j <= linhas_preenchidas; ++j){
             if(j == idx_linha_analisada){
-                sum12 += linha_analisada[j];
+                if(linha_analisada[i]){
+                    sum12 += 1;
+                }
             }
-            else if(colunas[i][j] != -1){
-                sum12 += nonograma[i][j];
+            else if(nonograma[j][i] != -1){
+                sum12 += nonograma[j][i];
             }
         }
 
@@ -199,9 +202,10 @@ int main(){
         //Preencher a linha
 
         
-        std::vector<std::vector<bool>> linhas_construidas(10, std::vector<bool>(n_colunas));
         int quadrados_vazios = n_colunas - soma_linhas[i]; // Número de quadrados vazios necessários nessa linha
         int combinao = combinacao(quadrados_vazios + 1, linhas[i].size()); // Número máximo de possíveis alocações dos blocos
+        int tamanho = std::min(combinao, 100);
+        std::vector<std::vector<bool>> linhas_construidas(tamanho, std::vector<bool>(n_colunas));
 
         if(soma_linhas[i] != 0){
             
@@ -210,9 +214,9 @@ int main(){
             for(int j{1}; j <= combinao; ++j){
                 numeros_sorteados.push_back(j);
             }
-            std::shuffle(numeros_sorteados.begin(), numeros_sorteados.end(), std::default_random_engine(seed));
+            std::random_shuffle(numeros_sorteados.begin(), numeros_sorteados.end());
 
-            for(int j{0}; j < std::min((int)numeros_sorteados.size(), 10); ++j){
+            for(int j{0}; j < tamanho; ++j){
 
                 int sorteado = numeros_sorteados[j];
                 // Converte o número sorteado à respectiva alocação de blocos
@@ -229,6 +233,7 @@ int main(){
         else{
 
             linha_escolhida = escolher_linha(linhas_construidas, linhas, colunas, nonograma, i, i);
+
         }
         // Escolhe a linha com menor conflito
 
