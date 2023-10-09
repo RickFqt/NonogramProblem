@@ -76,6 +76,71 @@ std::vector<bool> convert_number(int n_sorteado, int quadrados_vazios, int bloco
 
 }
 
+void pre_processamento(std::vector<std::vector<int>>colunas,
+                       std::vector<std::vector<int>>& nonograma){
+    
+    int n_colunas = colunas.size();
+    int n_linhas = nonograma.size();
+    int current_idx;
+
+
+    for(int i{0}; i < n_colunas; ++i){
+        std::vector<std::pair<int, int>>inicio_fim;
+        std::vector<std::pair<int, int>>fim_inicio;
+
+        // Encontra as posições dos blocos mais acima na coluna
+        current_idx = 0;
+        for(int j{0}; j < colunas[i].size(); ++j){
+            inicio_fim.push_back({current_idx, current_idx + colunas[i][j]-1});
+            current_idx += colunas[i][j] + 1;
+        }
+
+        // Encontra as posições dos blocos mais abaixo na coluna
+        current_idx = n_linhas - 1;
+        for(int j{(int)colunas[i].size() - 1}; j >= 0; --j){
+            fim_inicio.push_back({current_idx - colunas[i][j] + 1, current_idx});
+            current_idx -= (colunas[i][j] + 1);
+        }
+        std::reverse(fim_inicio.begin(), fim_inicio.end());
+
+        // Caso a coluna não tenha blocos, preenche tudo com X
+        if(colunas[i][0] == 0){
+            for(int j{0}; j < n_linhas; ++j){
+                nonograma[j][i] = 0;
+            }
+        }
+
+        // Preenche todos os quadrados que tenham "overlap"
+        for(int j{0}; j < colunas[i].size(); ++j){
+            if(inicio_fim[j].second - fim_inicio[j].first >= 0){
+
+                for(int k{fim_inicio[j].first}; k <= inicio_fim[j].second; ++k){
+                    nonograma[k][i] = 1;
+                }
+            }
+        }
+    }
+
+}
+
+bool linha_valida(const std::vector<bool>& linha, const std::vector<int>& linha_nonograma){
+    bool retorno = true;
+
+    for(int i{0}; i < linha.size(); ++i){
+
+        if(linha[i] && linha_nonograma[i] == 0){
+            return false;
+        }
+
+        if(!linha[i] && linha_nonograma[i] == 1){
+            return false;
+        }
+    }
+
+    return retorno;
+}
+
+
 int soma_vetor(std::vector<int> vetor){
     int total = 0;
     for(int i{0}; i < vetor.size(); ++i){
@@ -142,13 +207,10 @@ std::vector<bool> escolher_linha(std::vector<std::vector<bool>>linhas_construida
 
 }
 
+//int myrandom (int i) { return std::rand()%i;}
+
 int main(){
-
-    // Seed aleatória
-    srand(time(nullptr));
-
-    // obtain a time-based seed:
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::srand ( unsigned ( std::time(0) ) );
 
     // Ler um arquivo aí
     int n_linhas, n_colunas;
@@ -189,6 +251,10 @@ int main(){
     // 1 --> Célula colorida
     std::vector<std::vector<int>> nonograma(n_linhas, std::vector<int>(n_colunas, -1));
 
+    // Pré-processamento: percorre as colunas, e marca os quadrados que são certos de ocorrer
+
+    pre_processamento(colunas, nonograma);
+
 
     // Algoritmo Heurístico :D
 
@@ -197,19 +263,29 @@ int main(){
     //      Fazer 10 construcoes para a linha corretamente sem se preocupar com as colunas
     //      Escolher a linha construída que menos causa conflito com as colunas
 
-    // Enquanto não estiver completo:
+    std::vector<int> sequencia_linhas;
+
     for(int i{0}; i < n_linhas; ++i){
+        sequencia_linhas.push_back(i);
+    }
+    std::random_shuffle(sequencia_linhas.begin(), sequencia_linhas.end());
+
+    // Enquanto não estiver completo:
+    for(int k{0}; k < n_linhas; ++k){
+        // Indice da linha atual
+        int i = sequencia_linhas[k];
         //Preencher a linha
 
         
         int quadrados_vazios = n_colunas - soma_linhas[i]; // Número de quadrados vazios necessários nessa linha
         int combinao = combinacao(quadrados_vazios + 1, linhas[i].size()); // Número máximo de possíveis alocações dos blocos
         int tamanho = std::min(combinao, 100);
-        std::vector<std::vector<bool>> linhas_construidas(tamanho, std::vector<bool>(n_colunas));
+        std::vector<std::vector<bool>> linhas_construidas;
 
         if(soma_linhas[i] != 0){
             
             std::vector<int> numeros_sorteados;
+            std::vector<bool> vetor_sorteado;
 
             for(int j{1}; j <= combinao; ++j){
                 numeros_sorteados.push_back(j);
@@ -219,8 +295,17 @@ int main(){
             for(int j{0}; j < tamanho; ++j){
 
                 int sorteado = numeros_sorteados[j];
+
                 // Converte o número sorteado à respectiva alocação de blocos
-                linhas_construidas[j] = convert_number(sorteado, quadrados_vazios, linhas[i].size(), n_colunas, linhas[i]);
+                vetor_sorteado = convert_number(sorteado, quadrados_vazios, linhas[i].size(), n_colunas, linhas[i]);
+
+                if(linha_valida(vetor_sorteado, nonograma[i])){
+                    linhas_construidas.push_back(convert_number(sorteado, quadrados_vazios, linhas[i].size(), n_colunas, linhas[i]));
+                }
+
+                if(j == tamanho - 1 && linhas_construidas.empty()){
+                    --j;
+                }
             }
 
 
@@ -228,11 +313,11 @@ int main(){
 
         std::vector<bool> linha_escolhida;
         if(soma_linhas[i] == 0){
-            linha_escolhida = linhas_construidas[0];
+            linha_escolhida = std::vector<bool>(n_colunas);
         }
         else{
 
-            linha_escolhida = escolher_linha(linhas_construidas, linhas, colunas, nonograma, i, i);
+            linha_escolhida = escolher_linha(linhas_construidas, linhas, colunas, nonograma, i, k);
 
         }
         // Escolhe a linha com menor conflito
