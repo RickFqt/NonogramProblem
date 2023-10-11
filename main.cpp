@@ -278,6 +278,10 @@ int main(){
 
         
         int quadrados_vazios = n_colunas - soma_linhas[i]; // Número de quadrados vazios necessários nessa linha
+        if(quadrados_vazios < 0){
+            std::cerr << "Nonograma sem solução! Impossível preencher linha " << i << "\n";
+            return 1;
+        }
         int combinao = combinacao(quadrados_vazios + 1, linhas[i].size()); // Número máximo de possíveis alocações dos blocos
         int tamanho = std::min(combinao, 100);
         std::vector<std::vector<bool>> linhas_construidas;
@@ -307,6 +311,11 @@ int main(){
                     --j;
                 }
             }
+
+            if(linhas_construidas.empty()){
+                std::cerr << "Nonograma sem solução! Impossível preencher linha " << i << "\n";
+            return 1;
+        }
 
 
         }
