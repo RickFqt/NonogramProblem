@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 
-std::vector<int> fatorial_vector({1});
+std::vector<long long int> fatorial_vector({1});
+std::vector<std::vector<int>> triangulo_pascal({{1}});
 
 std::vector<int> tokenize(std::string input){
 
@@ -14,7 +15,7 @@ std::vector<int> tokenize(std::string input){
     return tokens;
 }
 
-int fatorial(int n){
+long long int fatorial(int n){
     if(fatorial_vector.size() > n){
         return fatorial_vector[n];
     }
@@ -26,6 +27,37 @@ int fatorial(int n){
 
 int combinacao(int n, int p){
     return (fatorial(n))/(fatorial(p)*fatorial(n-p));
+}
+
+int combinacao_boa(int n, int p){
+    if(triangulo_pascal.size() > n){
+
+        if(triangulo_pascal[n].size() > p){
+            return triangulo_pascal[n][p];
+        }
+
+        return -1;
+    }
+    else{
+        
+        int idx_inicial = triangulo_pascal.size();
+        while(triangulo_pascal.size() <= n){
+            triangulo_pascal.push_back({1});
+        }
+        for(int i{idx_inicial}; i <= n; ++i){
+
+            for(int j{1}; j <= i; ++j){
+                if(j == i){
+                    triangulo_pascal[i].push_back(1);
+                }
+                else{
+                    triangulo_pascal[i].push_back(combinacao_boa(i - 1, j - 1) + combinacao_boa(i - 1, j));
+                }
+            }
+        }
+
+        return combinacao_boa(n, p);
+    }
 }
 
 std::vector<bool> convert_number(int n_sorteado, int quadrados_vazios, int blocos_preenchidos, 
@@ -40,8 +72,8 @@ std::vector<bool> convert_number(int n_sorteado, int quadrados_vazios, int bloco
         if(blocos_preenchidos == 0){
             pos_blocos[i] = false;
         }
-        else if(combinacao(quadrados_vazios - i, blocos_preenchidos - 1) < n_sorteado){
-            n_sorteado -= combinacao(quadrados_vazios - i, blocos_preenchidos - 1);
+        else if(combinacao_boa(quadrados_vazios - i, blocos_preenchidos - 1) < n_sorteado){
+            n_sorteado -= combinacao_boa(quadrados_vazios - i, blocos_preenchidos - 1);
             pos_blocos[i] = false;
 
         }
@@ -279,10 +311,12 @@ int main(){
         
         int quadrados_vazios = n_colunas - soma_linhas[i]; // Número de quadrados vazios necessários nessa linha
         if(quadrados_vazios < 0){
-            std::cerr << "Nonograma sem solução! Impossível preencher linha " << i << "\n";
+            std::cerr << "Nonograma sem solução1! Impossível preencher linha " << i << "\n";
             return 1;
         }
-        int combinao = combinacao(quadrados_vazios + 1, linhas[i].size()); // Número máximo de possíveis alocações dos blocos
+
+        int combinao = combinacao_boa(quadrados_vazios + 1, linhas[i].size()); // Número máximo de possíveis alocações dos blocos
+        
         int tamanho = std::min(combinao, 100);
         std::vector<std::vector<bool>> linhas_construidas;
 
@@ -296,9 +330,11 @@ int main(){
             }
             std::random_shuffle(numeros_sorteados.begin(), numeros_sorteados.end());
 
+            int index_sorteado = 0;
+            //std::cout << "Combinacoes = " << combinao << std::endl;
             for(int j{0}; j < tamanho; ++j){
 
-                int sorteado = numeros_sorteados[j];
+                int sorteado = numeros_sorteados[index_sorteado];
 
                 // Converte o número sorteado à respectiva alocação de blocos
                 vetor_sorteado = convert_number(sorteado, quadrados_vazios, linhas[i].size(), n_colunas, linhas[i]);
@@ -310,15 +346,23 @@ int main(){
                 if(j == tamanho - 1 && linhas_construidas.empty()){
                     --j;
                 }
+
+                ++index_sorteado;
+
+                if(index_sorteado >= combinao){
+                    break;
+                }
             }
 
             if(linhas_construidas.empty()){
-                std::cerr << "Nonograma sem solução! Impossível preencher linha " << i << "\n";
-            return 1;
-        }
+                std::cerr << "Nonograma sem solução2! Impossível preencher linha " << i << "\n";
+                return 1;
+            }
 
 
+
         }
+        // std::cout << "batata4" << std::endl;
 
         std::vector<bool> linha_escolhida;
         if(soma_linhas[i] == 0){
