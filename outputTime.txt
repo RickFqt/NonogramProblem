@@ -1,0 +1,5 @@
+# Medição do tempo do teste 0: 0.447275 com média de objetivo de 4.78
+# Medição do tempo do teste 1: 27.848606 com média de objetivo de 28.64
+# Medição do tempo do teste 2: 22.033795 com média de objetivo de 39.04
+# Medição do tempo do teste 3: 62.080714 com média de objetivo de 54.64
+# Medição do tempo do teste 4: 1.485167 com média de objetivo de 8.92
