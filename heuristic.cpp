@@ -1,7 +1,9 @@
 #include <bits/stdc++.h>
 
-std::vector<long long int> fatorial_vector({1});
+
 std::vector<std::vector<int>> triangulo_pascal({{1}});
+
+// ---------------------- Metodos auxiliares ----------------
 
 std::vector<int> tokenize(std::string input){
 
@@ -15,21 +17,15 @@ std::vector<int> tokenize(std::string input){
     return tokens;
 }
 
-long long int fatorial(int n){
-    if(fatorial_vector.size() > n){
-        return fatorial_vector[n];
+int soma_vetor(std::vector<int> vetor){
+    int total = 0;
+    for(int i{0}; i < vetor.size(); ++i){
+        total += vetor[i];
     }
-
-    fatorial_vector.push_back(n * fatorial(n-1));
-
-    return fatorial_vector[n];
+    return total;
 }
 
 int combinacao(int n, int p){
-    return (fatorial(n))/(fatorial(p)*fatorial(n-p));
-}
-
-int combinacao_boa(int n, int p){
     if(triangulo_pascal.size() > n){
 
         if(triangulo_pascal[n].size() > p){
@@ -51,61 +47,71 @@ int combinacao_boa(int n, int p){
                     triangulo_pascal[i].push_back(1);
                 }
                 else{
-                    triangulo_pascal[i].push_back(combinacao_boa(i - 1, j - 1) + combinacao_boa(i - 1, j));
+                    triangulo_pascal[i].push_back(combinacao(i - 1, j - 1) + combinacao(i - 1, j));
                 }
             }
         }
 
-        return combinacao_boa(n, p);
+        return combinacao(n, p);
     }
 }
 
-std::vector<bool> convert_number(int n_sorteado, int quadrados_vazios, int blocos_preenchidos, 
-                                 int largura, std::vector<int> blocos){
+// ---------------------- Metodos da heuristica ----------------
+
+// Funcao objetivo calculada durante o algoritmo
+int funcao_objetivo(std::vector<std::vector<int>>linhas,
+                std::vector<std::vector<int>>colunas,
+                std::vector<std::vector<int>>nonograma,
+                std::vector<bool>linha_analisada, 
+                int idx_linha_analisada,
+                int linhas_preenchidas){
     
-    std::vector<bool> pos_blocos(quadrados_vazios + 1);
-    std::vector<bool> retorno(largura);
+    int sum1 = 0;
+    int sum11, sum12;
 
-    // Converte o numero sorteado para o formato de distribuicao de blocos associado
-    for(int i{0}; i <= quadrados_vazios; ++i){
+    for(int i{0}; i < colunas.size(); ++i){
+        sum11 = 0; sum12 = 0;
+        sum11 += soma_vetor(colunas[i]);
 
-        if(blocos_preenchidos == 0){
-            pos_blocos[i] = false;
-        }
-        else if(combinacao_boa(quadrados_vazios - i, blocos_preenchidos - 1) < n_sorteado){
-            n_sorteado -= combinacao_boa(quadrados_vazios - i, blocos_preenchidos - 1);
-            pos_blocos[i] = false;
-
-        }
-        else{
-            --blocos_preenchidos;
-            pos_blocos[i] = true;
-        }
-
-    }
-
-
-    int index_bloco = 0;
-    int index_retorno = 0;
-
-    // Converte a linha resultante para uma linha própria do nonograma
-    for(int i{0}; i < pos_blocos.size(); ++i){
-        if(pos_blocos[i]){
-            for(int j{0}; j < blocos[index_bloco]; ++j){
-                retorno[index_retorno] = 1;
-                ++index_retorno;
+        for(int j{0}; j <= linhas_preenchidas; ++j){
+            if(j == idx_linha_analisada){
+                if(linha_analisada[i]){
+                    sum12 += 1;
+                }
             }
-            ++index_bloco;
-            
+            else if(nonograma[j][i] != -1){
+                sum12 += nonograma[j][i];
+            }
         }
-    
-        ++index_retorno;
+
+        sum1 += abs(sum11 - sum12);
     }
 
+    return sum1;
+}
 
-    return retorno;
+// Funcao objetivo calculada quando o nonograma está completo
+int funcao_objetivo(std::vector<std::vector<int>>linhas,
+                std::vector<std::vector<int>>colunas,
+                std::vector<std::vector<int>>nonograma){
     
+    int sum1 = 0;
+    int sum11, sum12;
 
+    for(int i{0}; i < colunas.size(); ++i){
+        sum11 = 0; sum12 = 0;
+        sum11 += soma_vetor(colunas[i]);
+
+        for(int j{0}; j < linhas.size(); ++j){
+            if(nonograma[j][i] != -1){
+                sum12 += nonograma[j][i];
+            }
+        }
+
+        sum1 += abs(sum11 - sum12);
+    }
+
+    return sum1;
 }
 
 void pre_processamento(std::vector<std::vector<int>>colunas,
@@ -155,6 +161,57 @@ void pre_processamento(std::vector<std::vector<int>>colunas,
 
 }
 
+
+
+std::vector<bool> convert_number(int n_sorteado, int quadrados_vazios, int blocos_preenchidos, 
+                                 int largura, std::vector<int> blocos){
+    
+    std::vector<bool> pos_blocos(quadrados_vazios + 1);
+    std::vector<bool> retorno(largura);
+
+    // Converte o numero sorteado para o formato de distribuicao de blocos associado
+    for(int i{0}; i <= quadrados_vazios; ++i){
+
+        if(blocos_preenchidos == 0){
+            pos_blocos[i] = false;
+        }
+        else if(combinacao(quadrados_vazios - i, blocos_preenchidos - 1) < n_sorteado){
+            n_sorteado -= combinacao(quadrados_vazios - i, blocos_preenchidos - 1);
+            pos_blocos[i] = false;
+
+        }
+        else{
+            --blocos_preenchidos;
+            pos_blocos[i] = true;
+        }
+
+    }
+
+
+    int index_bloco = 0;
+    int index_retorno = 0;
+
+    // Converte a linha resultante para uma linha própria do nonograma
+    for(int i{0}; i < pos_blocos.size(); ++i){
+        if(pos_blocos[i]){
+            for(int j{0}; j < blocos[index_bloco]; ++j){
+                retorno[index_retorno] = 1;
+                ++index_retorno;
+            }
+            ++index_bloco;
+            
+        }
+    
+        ++index_retorno;
+    }
+
+
+    return retorno;
+    
+
+}
+
+
 bool linha_valida(const std::vector<bool>& linha, const std::vector<int>& linha_nonograma){
     bool retorno = true;
 
@@ -173,53 +230,6 @@ bool linha_valida(const std::vector<bool>& linha, const std::vector<int>& linha_
 }
 
 
-int soma_vetor(std::vector<int> vetor){
-    int total = 0;
-    for(int i{0}; i < vetor.size(); ++i){
-        total += vetor[i];
-    }
-    return total;
-}
-
-
-int funcaodoida(std::vector<std::vector<int>>linhas,
-                std::vector<std::vector<int>>colunas,
-                std::vector<std::vector<int>>nonograma,
-                std::vector<bool>linha_analisada, 
-                int idx_linha_analisada,
-                int linhas_preenchidas){
-    
-    int sum1 = 0;
-    int sum11, sum12;
-
-    for(int i{0}; i < colunas.size(); ++i){
-        sum11 = 0; sum12 = 0;
-        sum11 += soma_vetor(colunas[i]);
-
-        for(int j{0}; j <= linhas_preenchidas; ++j){
-            if(j == idx_linha_analisada){
-                if(linha_analisada[i]){
-                    sum12 += 1;
-                }
-            }
-            else if(nonograma[j][i] != -1){
-                sum12 += nonograma[j][i];
-            }
-        }
-
-        sum1 += abs(sum11 - sum12);
-    }
-
-    // int sum2 = 0;
-    // int sum21;
-
-    // for(int i{0}; i < colunas.size(); ++i){
-
-    // }
-
-    return sum1;
-}
-
 std::vector<bool> escolher_linha(std::vector<std::vector<bool>>linhas_construidas, std::vector<std::vector<int>>linhas,
                                  std::vector<std::vector<int>>colunas, std::vector<std::vector<int>>nonograma,
                                  int idx_linha_analisada, int linhas_preenchidas){
@@ -228,7 +238,7 @@ std::vector<bool> escolher_linha(std::vector<std::vector<bool>>linhas_construida
     int current;
 
     for(int i{0}; i < linhas_construidas.size(); ++i){
-        current = funcaodoida(linhas, colunas, nonograma, linhas_construidas[i], idx_linha_analisada, linhas_preenchidas);
+        current = funcao_objetivo(linhas, colunas, nonograma, linhas_construidas[i], idx_linha_analisada, linhas_preenchidas);
         if (current < min){
             i_min = i;
             min = current;
@@ -239,7 +249,7 @@ std::vector<bool> escolher_linha(std::vector<std::vector<bool>>linhas_construida
 
 }
 
-//int myrandom (int i) { return std::rand()%i;}
+
 
 int main(){
     std::srand ( unsigned ( std::time(0) ) );
@@ -315,7 +325,7 @@ int main(){
             return 1;
         }
 
-        int combinao = combinacao_boa(quadrados_vazios + 1, linhas[i].size()); // Número máximo de possíveis alocações dos blocos
+        int combinao = combinacao(quadrados_vazios + 1, linhas[i].size()); // Número máximo de possíveis alocações dos blocos
         
         int tamanho = std::min(combinao, 100);
         std::vector<std::vector<bool>> linhas_construidas;
@@ -402,6 +412,12 @@ int main(){
         }
         std::cout << std::endl;
     }
+
+    int objetivo_final = funcao_objetivo(linhas, colunas, nonograma);
+    std::cout << std::endl << "Funcao objetivo final: " << objetivo_final << std::endl;
+    // if(objetivo_final == 0){
+    //     std::cout << "Solução Correta!" << std::endl;
+    // }
 
 
 
