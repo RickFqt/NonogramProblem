@@ -58,6 +58,45 @@ int combinacao(int n, int p){
 
 // ---------------------- Metodos da heuristica ----------------
 
+std::vector<std::vector<int>> calcula_blocos(std::vector<std::vector<int>>nonograma){
+
+    int n_linhas = nonograma.size();
+    int n_colunas = nonograma[0].size();
+    std::vector<std::vector<int>> quantidade_blocos(n_colunas);
+    std::vector<int> continuidade_blocos(n_colunas);
+    std::vector<int> bloco_atual(n_colunas);
+
+    for(int i{0}; i < n_linhas; ++i){
+
+        for(int j{0}; j < n_colunas; ++j){
+
+            if(nonograma[i][j] == 0 || nonograma[i][j] == -1){
+
+                if(continuidade_blocos[j] > 0){
+                    
+                    continuidade_blocos[j] = 0;
+                    bloco_atual[j]++;
+                }
+            }
+            else if(nonograma[i][j]  == 1){
+
+                continuidade_blocos[j]++;
+                if(continuidade_blocos[j] == 1){
+                    // Atualiza qual é o bloco atual
+                    // Atualiza o tamanho do bloco atual
+                    quantidade_blocos[j].push_back(1);
+                }
+                else{
+                    quantidade_blocos[j][bloco_atual[j]]++;
+                }
+            }
+        }
+    }
+
+    return quantidade_blocos;
+
+}
+
 // Funcao objetivo calculada durante o algoritmo
 int funcao_objetivo(std::vector<std::vector<int>>linhas,
                 std::vector<std::vector<int>>colunas,
@@ -66,6 +105,8 @@ int funcao_objetivo(std::vector<std::vector<int>>linhas,
                 int idx_linha_analisada,
                 int linhas_preenchidas){
     
+
+    // Primeira parcela do somatorio
     int sum1 = 0;
     int sum11, sum12;
 
@@ -87,7 +128,30 @@ int funcao_objetivo(std::vector<std::vector<int>>linhas,
         sum1 += abs(sum11 - sum12);
     }
 
-    return sum1;
+
+    // Segunda parcela do somatório
+    int sum2 = 0, c_pk = 0, b_pk = 0;
+    std::vector<std::vector<int>> blocos_por_coluna = calcula_blocos(nonograma);
+
+    for(int k{0}; k < colunas.size(); ++k){
+        for(int p{0}; p < std::max(colunas[k].size(), blocos_por_coluna[k].size()); ++p){
+            if(p >= colunas[k].size()){
+                c_pk = 0;
+            }
+            else{
+                c_pk = colunas[k][p];
+            }
+
+            if(p >= blocos_por_coluna[k].size()){
+                b_pk = 0;
+            }
+            else{
+                b_pk = blocos_por_coluna[k][p];
+            }
+            sum2 += abs(c_pk - b_pk);
+        }
+    }
+    return sum1 + sum2;
 }
 
 // Funcao objetivo calculada quando o nonograma está completo
@@ -111,7 +175,29 @@ int funcao_objetivo(std::vector<std::vector<int>>linhas,
         sum1 += abs(sum11 - sum12);
     }
 
-    return sum1;
+    // Segunda parcela do somatório
+    int sum2 = 0, c_pk, b_pk;
+    std::vector<std::vector<int>> blocos_por_coluna = calcula_blocos(nonograma);
+
+    for(int k{0}; k < colunas.size(); ++k){
+        for(int p{0}; p < std::max(colunas[k].size(), blocos_por_coluna[k].size()); ++p){
+            if(p >= colunas[k].size()){
+                c_pk = 0;
+            }
+            else{
+                c_pk = colunas[k][p];
+            }
+
+            if(p >= blocos_por_coluna[k].size()){
+                b_pk = 0;
+            }
+            else{
+                b_pk = blocos_por_coluna[k][p];
+            }
+            sum2 += abs(c_pk - b_pk);
+        }
+    }
+    return sum1 + sum2;
 }
 
 void pre_processamento(std::vector<std::vector<int>>colunas,
@@ -415,9 +501,9 @@ int main(){
 
     int objetivo_final = funcao_objetivo(linhas, colunas, nonograma);
     std::cout << std::endl << "Funcao objetivo final: " << objetivo_final << std::endl;
-    // if(objetivo_final == 0){
-    //     std::cout << "Solução Correta!" << std::endl;
-    // }
+    if(objetivo_final == 0){
+        std::cout << "Solução Correta!" << std::endl;
+    }
 
 
 
