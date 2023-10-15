@@ -1,5 +1,12 @@
-# Medição do tempo do teste 0: 0.447275 com média de objetivo de 4.78
-# Medição do tempo do teste 1: 27.848606 com média de objetivo de 28.64
-# Medição do tempo do teste 2: 22.033795 com média de objetivo de 39.04
-# Medição do tempo do teste 3: 62.080714 com média de objetivo de 54.64
-# Medição do tempo do teste 4: 1.485167 com média de objetivo de 8.92
+# Medição do tempo do teste 0: 0.544892ms com média de objetivo de 23.24 e n de sucessos de 0 e funcao minima de 12 e funcao maxima de 30
+# Medição do tempo do teste 1: 45.352677ms com média de objetivo de 206.36 e n de sucessos de 0 e funcao minima de 148 e funcao maxima de 254
+# Medição do tempo do teste 2: 37.343202ms com média de objetivo de 146.36 e n de sucessos de 0 e funcao minima de 116 e funcao maxima de 190
+# Medição do tempo do teste 3: 90.137559ms com média de objetivo de 267.28 e n de sucessos de 0 e funcao minima de 238 e funcao maxima de 298
+# Medição do tempo do teste 4: 1.906891ms com média de objetivo de 30.64 e n de sucessos de 0 e funcao minima de 24 e funcao maxima de 40
+# Medição do tempo do teste 5: 66.288596ms com média de objetivo de 189.88 e n de sucessos de 0 e funcao minima de 146 e funcao maxima de 216
+# Medição do tempo do teste 6: 648.641480ms com média de objetivo de 386.8 e n de sucessos de 0 e funcao minima de 330 e funcao maxima de 430
+# Medição do tempo do teste 7: 6630.982820ms com média de objetivo de 1203.52 e n de sucessos de 0 e funcao minima de 1034 e funcao maxima de 1334
+# Medição do tempo do teste 8: 668.761318ms com média de objetivo de 598.72 e n de sucessos de 0 e funcao minima de 532 e funcao maxima de 652
+# Medição do tempo do teste 9: 63904.052956ms com média de objetivo de 2024.68 e n de sucessos de 0 e funcao minima de 1842 e funcao maxima de 2126
+# Medição do tempo do teste 10: 2196.501171ms com média de objetivo de 1109.36 e n de sucessos de 0 e funcao minima de 1038 e funcao maxima de 1172
+# Medição do tempo do teste 11: 127722.088719ms com média de objetivo de 1989.92 e n de sucessos de 0 e funcao minima de 1888 e funcao maxima de 2082
