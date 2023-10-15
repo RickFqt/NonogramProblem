@@ -336,25 +336,25 @@ std::vector<bool> escolher_linha(std::vector<std::vector<bool>>linhas_construida
 }
 
 
-int N_REPETITIONS = 10;
+int N_REPETITIONS = 50;
 
 int main(int argc, char * argv[]){
 
     std::srand ( unsigned ( std::time(0) ) );
 
-    std::string testCases[5] = {
+    std::string testCases[12] = {
         "./inputs/dancer.txt",
         "./inputs/cat.txt",
         "./inputs/skid.txt",
         "./inputs/bucks.txt",
-        "./inputs/edge.txt"
-        // "./inputs/smoke.txt",
-        // "./inputs/knot.txt",
-        // "./inputs/swing.txt",
-        // "./inputs/mum.txt",
-        // "./inputs/dicap.txt",
-        // "./inputs/tragic.txt",
-        // "./inputs/merka.txt",
+        "./inputs/edge.txt",
+        "./inputs/smoke.txt",
+        "./inputs/knot.txt",
+        "./inputs/swing.txt",
+        "./inputs/mum.txt",
+        "./inputs/dicap.txt",
+        "./inputs/tragic.txt",
+        "./inputs/merka.txt",
         // "./inputs/petro.txt",
         // "./inputs/m&m.txt",
         // "./inputs/signed.txt",
@@ -367,9 +367,12 @@ int main(int argc, char * argv[]){
 
     std::ofstream out_file;
     out_file.open ("outputTime.txt");
-    for(int times = 0; times < 5; ++times){
+    for(int times = 0; times < 12; ++times){
         double elapsed_time_mean = 0;
         double media_objetivo = 0;
+        int n_sucessos = 0;
+        int objetivo_min = INT_MAX;
+        int objetivo_max = -1;
 
         std::ifstream file(testCases[times]);
         if (!file) {
@@ -560,13 +563,23 @@ int main(int argc, char * argv[]){
 
             elapsed_time_mean += ( std::chrono::duration <double, std::milli> (diff).count() );
             media_objetivo += objetivo_final;
+            if(objetivo_final == 0){
+                n_sucessos++;
+            }
+            if(objetivo_final < objetivo_min){
+                objetivo_min = objetivo_final;
+            }
+            if(objetivo_final > objetivo_max){
+                objetivo_max = objetivo_final;
+            }
         }
 
         elapsed_time_mean = elapsed_time_mean/N_REPETITIONS;
         media_objetivo = media_objetivo/N_REPETITIONS;
+        double media_sucessos = n_sucessos/N_REPETITIONS;
         
 
-        out_file << "# Medição do tempo do teste "<< times << ": " << std::to_string(elapsed_time_mean) << " com média de objetivo de " << media_objetivo <<"\n";
+        out_file << "# Medição do tempo do teste "<< times << ": " << std::to_string(elapsed_time_mean) << "ms com média de objetivo de " << media_objetivo << " e n de sucessos de "<< n_sucessos <<" e funcao minima de " << objetivo_min <<" e funcao maxima de " << objetivo_max << "\n";
     }
 
     out_file.close();
