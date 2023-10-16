@@ -436,11 +436,11 @@ int main(){
                 vetor_sorteado = convert_number(sorteado, quadrados_vazios, linhas[i].size(), n_colunas, linhas[i]);
 
                 if(linha_valida(vetor_sorteado, nonograma[i])){
-                    linhas_construidas.push_back(convert_number(sorteado, quadrados_vazios, linhas[i].size(), n_colunas, linhas[i]));
+                    linhas_construidas.push_back(vetor_sorteado);
                 }
 
                 if(j == tamanho - 1 && linhas_construidas.empty()){
-                    --j;
+                    linhas_construidas.push_back(vetor_sorteado);
                 }
 
                 ++index_sorteado;
