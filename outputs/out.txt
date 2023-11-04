@@ -1,11 +1,13 @@
         
- OOOO   
+   OOOO 
  OOOOOO 
  OO  OO 
- OO  OO 
+ OO OO  
  OOOOOO 
  OOOO   
  OO     
  OO     
  OO     
         
+
+Funcao objetivo final: 10
