@@ -403,6 +403,68 @@ int main(){
     pre_processamento(colunas, nonograma, colunas_completas, false);
     pre_processamento(linhas, nonograma, linhas_completas, true);
 
+    std::queue<int> linhas_to_see;
+    std::queue<int> colunas_to_see;
+
+    for(int i{0}; i < n_linhas; ++i){
+        if(!linhas_completas[i]){
+            linhas_to_see.push(i);
+        }
+    }
+
+    for(int i{0}; i < n_colunas; ++i){
+        if(!colunas_completas[i]){
+            colunas_to_see.push(i);
+        }
+    }
+
+    int to_see;
+    std::vector<int> coluna_nonograma(n_linhas);
+    std::vector<std::pair<int, int>> rightmost;
+    std::vector<std::pair<int, int>> leftmost;
+    while(!linhas_to_see.empty() || !colunas_to_see.empty()){
+        while(!linhas_to_see.empty()){
+            to_see = linhas_to_see.front();
+            leftmost = mais_a_esquerda(linhas[to_see], nonograma[to_see], soma_linhas[to_see], n_linhas, n_colunas);
+            rightmost = mais_a_direita(linhas[to_see], nonograma[to_see], soma_linhas[to_see], n_linhas, n_colunas);
+            
+            // Aplicar regra 1
+
+            // Aplicar regra 2
+
+            // Aplicar regra 3
+
+            // Aplicar regra 4
+
+            // Aplicar regra 5
+
+            linhas_to_see.pop();
+        }
+
+        while(!colunas_to_see.empty()){
+            to_see = colunas_to_see.front();
+
+            for(int i{0}; i < n_linhas; ++i){
+                coluna_nonograma[i] = nonograma[i][to_see];
+            }
+
+
+            leftmost = mais_a_cima(colunas[to_see], coluna_nonograma, soma_colunas[to_see], n_colunas, n_linhas);
+            rightmost = mais_a_baixo(colunas[to_see], coluna_nonograma, soma_colunas[to_see], n_colunas, n_linhas);
+
+            // Aplicar regra 1
+
+            // Aplicar regra 2
+
+            // Aplicar regra 3
+
+            // Aplicar regra 4
+
+            // Aplicar regra 5
+
+            colunas_to_see.pop();
+        }
+    }
 
     for(int i{0}; i < n_linhas; ++i){
 
