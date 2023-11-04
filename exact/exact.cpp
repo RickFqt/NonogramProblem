@@ -297,17 +297,22 @@ std::vector<std::pair<int, int>> mais_a_cima
     }
 
     if(maisabaixo){
+        // std::cout << "reverted!" << std::endl;
         std::reverse(numeros_sorteados.begin(), numeros_sorteados.end());
     }
-    for(int j{1}; j <= combinao; ++j){
+    for(int j : numeros_sorteados){
         // Converte o número sorteado à respectiva alocação de blocos
         vetor_sorteado = convert_number(j, quadrados_vazios, coluna.size(), n_linhas, coluna);
+        // std::cout << "Vetor Sorteado: ";
+        //     for(int p = 0; p < vetor_sorteado.size(); ++p){
+        //         std::cout << vetor_sorteado[p] << " \n"[p == vetor_sorteado.size() - 1];
+        //     }
         if(linha_valida(vetor_sorteado, coluna_nonograma)){
 
-            std::cout << "Vetor Que deu Certo: ";
-            for(int p = 0; p < vetor_sorteado.size(); ++p){
-                std::cout << vetor_sorteado[p] << " \n"[p == vetor_sorteado.size() - 1];
-            }
+            // std::cout << "Vetor Que deu Certo: ";
+            // for(int p = 0; p < vetor_sorteado.size(); ++p){
+            //     std::cout << vetor_sorteado[p] << " \n"[p == vetor_sorteado.size() - 1];
+            // }
             int current_bloco = 0;
             for(int i{0}; i < vetor_sorteado.size(); ++i){
 
@@ -351,6 +356,52 @@ std::vector<std::pair<int, int>> mais_a_direita
   int soma_linha, int n_linhas, int n_colunas){
 
     return mais_a_cima(linha, linha_nonograma, soma_linha, n_linhas, n_colunas, true);
+}
+
+void atualiza_afetados(std::vector<int> updated, std::vector<bool> completados,
+                       std::vector<bool>& in_to_be_seen, std::queue<int>&to_be_seen){
+    int updated_size = updated.size();
+    int afetado;
+
+    for(int i{0}; i < updated_size; ++i){
+        afetado = updated[i];
+        if(!completados[afetado] && !in_to_be_seen[afetado]){
+            to_be_seen.push(afetado);
+            in_to_be_seen[afetado] = true;
+        }
+    }
+}
+
+void regra_1(std::vector<std::pair<int, int>> leftmost, std::vector<std::pair<int, int>> rightmost,
+             std::vector<bool> completados, std::vector<bool>& in_to_be_seen, std::queue<int>&to_be_seen,
+             std::vector<std::vector<int>>& nonograma, std::vector<int> blocos, int idx, bool eh_coluna = false){
+
+    
+    std::vector<int> afetados;
+    
+    // Preenche todos os quadrados que tenham "overlap"
+    for(int j{0}; j < blocos.size(); ++j){
+        if(leftmost[j].second - rightmost[j].first >= 0){
+
+            for(int k{rightmost[j].first}; k <= leftmost[j].second; ++k){
+                if(eh_coluna){
+                    if(nonograma[k][idx] == -1){
+                        afetados.push_back(k);
+                        nonograma[k][idx] = 1;
+                    }
+                }
+                else{
+                    if(nonograma[idx][k] == -1){
+                        afetados.push_back(k);
+                        nonograma[idx][k] = 1;
+                    }
+                }
+            }
+        }
+    }
+
+    atualiza_afetados(afetados, completados, in_to_be_seen, to_be_seen);
+
 }
 
 int main(){
@@ -405,16 +456,20 @@ int main(){
 
     std::queue<int> linhas_to_see;
     std::queue<int> colunas_to_see;
+    std::vector<bool> in_linhas_to_see(n_linhas);
+    std::vector<bool> in_colunas_to_see(n_colunas);
 
     for(int i{0}; i < n_linhas; ++i){
         if(!linhas_completas[i]){
             linhas_to_see.push(i);
+            in_linhas_to_see[i] = true;
         }
     }
 
     for(int i{0}; i < n_colunas; ++i){
         if(!colunas_completas[i]){
             colunas_to_see.push(i);
+            in_colunas_to_see[i] = true;
         }
     }
 
@@ -427,8 +482,10 @@ int main(){
             to_see = linhas_to_see.front();
             leftmost = mais_a_esquerda(linhas[to_see], nonograma[to_see], soma_linhas[to_see], n_linhas, n_colunas);
             rightmost = mais_a_direita(linhas[to_see], nonograma[to_see], soma_linhas[to_see], n_linhas, n_colunas);
-            
+
             // Aplicar regra 1
+            regra_1(leftmost, rightmost, colunas_completas, in_colunas_to_see, colunas_to_see, nonograma, linhas[to_see], to_see);
+
 
             // Aplicar regra 2
 
@@ -439,6 +496,7 @@ int main(){
             // Aplicar regra 5
 
             linhas_to_see.pop();
+            in_linhas_to_see[to_see] = false;
         }
 
         while(!colunas_to_see.empty()){
@@ -453,6 +511,7 @@ int main(){
             rightmost = mais_a_baixo(colunas[to_see], coluna_nonograma, soma_colunas[to_see], n_colunas, n_linhas);
 
             // Aplicar regra 1
+            regra_1(leftmost, rightmost, linhas_completas, in_linhas_to_see, linhas_to_see, nonograma, colunas[to_see], to_see, true);
 
             // Aplicar regra 2
 
@@ -463,13 +522,14 @@ int main(){
             // Aplicar regra 5
 
             colunas_to_see.pop();
+            in_colunas_to_see[to_see] = false;
         }
     }
 
-    for(int i{0}; i < n_linhas; ++i){
+    // for(int i{0}; i < n_linhas; ++i){
 
-        mais_a_esquerda(linhas[i], nonograma[i], soma_linhas[i], n_linhas, n_colunas);
-    }
+    //     mais_a_esquerda(linhas[i], nonograma[i], soma_linhas[i], n_linhas, n_colunas);
+    // }
 
 
     for(int i{0}; i < n_linhas; ++i){
