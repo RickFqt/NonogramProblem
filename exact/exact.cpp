@@ -215,7 +215,6 @@ void pre_processamento(std::vector<std::vector<int>>colunas,
 }
 
 
-
 std::vector<bool> convert_number(int n_sorteado, int quadrados_vazios, int blocos_preenchidos, 
                                  int largura, std::vector<int> blocos){
     
@@ -264,9 +263,95 @@ std::vector<bool> convert_number(int n_sorteado, int quadrados_vazios, int bloco
 
 }
 
+bool linha_valida(const std::vector<bool>& linha, const std::vector<int>& linha_nonograma){
+    bool retorno = true;
+
+    for(int i{0}; i < linha.size(); ++i){
+
+        if(linha[i] && linha_nonograma[i] == 0){
+            return false;
+        }
+
+        if(!linha[i] && linha_nonograma[i] == 1){
+            return false;
+        }
+    }
+
+    return retorno;
+}
+
+std::vector<std::pair<int, int>> mais_a_cima
+(std::vector<int>coluna, std::vector<int>coluna_nonograma,
+ int soma_coluna, int n_colunas, int n_linhas, bool maisabaixo = false){
 
 
+    int quadrados_vazios = n_linhas - soma_coluna; // Número de quadrados vazios necessários nessa linha
+    int combinao = combinacao(quadrados_vazios + 1, coluna.size()); // Número máximo de possíveis alocações dos blocos
 
+    std::vector<int> numeros_sorteados;
+    std::vector<bool> vetor_sorteado;
+    std::vector<std::pair<int, int>>inicio_fim;
+
+    for(int i=1; i <= combinao; ++i){
+        numeros_sorteados.push_back(i);
+    }
+
+    if(maisabaixo){
+        std::reverse(numeros_sorteados.begin(), numeros_sorteados.end());
+    }
+    for(int j{1}; j <= combinao; ++j){
+        // Converte o número sorteado à respectiva alocação de blocos
+        vetor_sorteado = convert_number(j, quadrados_vazios, coluna.size(), n_linhas, coluna);
+        if(linha_valida(vetor_sorteado, coluna_nonograma)){
+
+            std::cout << "Vetor Que deu Certo: ";
+            for(int p = 0; p < vetor_sorteado.size(); ++p){
+                std::cout << vetor_sorteado[p] << " \n"[p == vetor_sorteado.size() - 1];
+            }
+            int current_bloco = 0;
+            for(int i{0}; i < vetor_sorteado.size(); ++i){
+
+                if(vetor_sorteado[i]){
+
+                    
+                    inicio_fim.push_back({i, i + coluna[current_bloco] - 1});
+                    i += coluna[current_bloco] - 1;
+                    current_bloco++;
+                }
+            }
+
+            return inicio_fim;
+        }
+    }
+
+
+    return {{-1, -1}};
+
+
+    
+
+}
+
+std::vector<std::pair<int, int>> mais_a_baixo
+(std::vector<int>coluna, std::vector<int>coluna_nonograma,
+int soma_coluna, int n_colunas, int n_linhas){
+
+    return mais_a_cima(coluna, coluna_nonograma, soma_coluna, n_colunas, n_linhas, true);
+}
+
+std::vector<std::pair<int, int>> mais_a_esquerda
+(std::vector<int>linha, std::vector<int>linha_nonograma,
+ int soma_linha, int n_linhas, int n_colunas){
+
+    return mais_a_cima(linha, linha_nonograma, soma_linha, n_linhas, n_colunas);
+}
+
+std::vector<std::pair<int, int>> mais_a_direita
+( std::vector<int>linha, std::vector<int>linha_nonograma,
+  int soma_linha, int n_linhas, int n_colunas){
+
+    return mais_a_cima(linha, linha_nonograma, soma_linha, n_linhas, n_colunas, true);
+}
 
 int main(){
     std::srand ( unsigned ( std::time(0) ) );
@@ -313,10 +398,17 @@ int main(){
     std::vector<bool> linhas_completas(n_linhas);
     std::vector<bool> colunas_completas(n_colunas);
 
-    // Pré-processamento: percorre as colunas, e marca os quadrados que são certos de ocorrer
+    // Pré-processamento: percorre as colunas e linhas, e marca os quadrados que são certos de ocorrer
 
     pre_processamento(colunas, nonograma, colunas_completas, false);
     pre_processamento(linhas, nonograma, linhas_completas, true);
+
+
+    for(int i{0}; i < n_linhas; ++i){
+
+        mais_a_esquerda(linhas[i], nonograma[i], soma_linhas[i], n_linhas, n_colunas);
+    }
+
 
     for(int i{0}; i < n_linhas; ++i){
         for(int j{0}; j < n_colunas; ++j){
