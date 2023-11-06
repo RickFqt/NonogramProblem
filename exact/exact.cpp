@@ -1,5 +1,12 @@
 #include <bits/stdc++.h>
+#define local_ultimo_chute std::get<0>(pilha_recursiva.top())
+#define nonograma_antes std::get<1>(pilha_recursiva.top())
+#define linhas_completadas_antes std::get<2>(pilha_recursiva.top())
+#define colunas_completadas_antes std::get<3>(pilha_recursiva.top())
+#define qual_ultimo_chute std::get<4>(pilha_recursiva.top())
+#define chute_type std::tuple<std::pair<int, int>, std::vector<std::vector<int>>, std::vector<bool>, std::vector<bool>, bool>
 
+#define PRINT_NONOGRAMA for(int i{0}; i < n_linhas; ++i){for(int j{0}; j < n_colunas; ++j){if(nonograma[i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
 
 std::vector<std::vector<int>> triangulo_pascal({{1}});
 
@@ -358,6 +365,23 @@ std::vector<std::pair<int, int>> mais_a_direita
     return mais_a_cima(linha, linha_nonograma, soma_linha, n_linhas, n_colunas, true);
 }
 
+bool is_nonogram_solved(std::vector<bool> linhas_completadas, std::vector<bool> colunas_completadas){
+
+    for(int i{0}; i < linhas_completadas.size(); ++i){
+        if(!linhas_completadas[i]){
+            return false;
+        }
+    }
+
+    for(int i{0}; i < colunas_completadas.size(); ++i){
+        if(!colunas_completadas[i]){
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void atualiza_afetados(std::vector<int> updated, std::vector<bool> completados,
                        std::vector<bool>& in_to_be_seen, std::queue<int>&to_be_seen){
     int updated_size = updated.size();
@@ -378,6 +402,46 @@ void regra_1(std::vector<std::pair<int, int>> leftmost, std::vector<std::pair<in
 
     
     std::vector<int> afetados;
+
+
+    // // TODO: ADAPTAR PRA REGRA 2
+    // if(leftmost == rightmost){
+
+    //     std::vector<std::pair<int, int>> blau = {{0, -1}};
+    //     for(int i{0}; i < leftmost.size(); ++i){
+    //         blau.push_back(leftmost[i]);
+    //     }
+    //     if(eh_coluna){
+
+    //         blau.push_back({nonograma[0].size(), nonograma[0].size()});
+    //     }
+    //     else{
+    //         blau.push_back({nonograma.size(), nonograma.size()});
+    //     }
+
+
+    //     // Preenche todos os X
+    //     for(int j{0}; j < blocos.size() + 1; ++j){
+    //         if(blau[j+1].first - blau[j].second > 0){
+
+    //             for(int k{blau[j].second + 1}; k <= blau[j+1].first - 1; ++k){
+    //                 if(eh_coluna){
+    //                     if(nonograma[k][idx] == -1){
+    //                         afetados.push_back(k);
+    //                         nonograma[k][idx] = 0;
+    //                     }
+    //                 }
+    //                 else{
+    //                     if(nonograma[idx][k] == -1){
+    //                         afetados.push_back(k);
+    //                         nonograma[idx][k] = 0;
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    // }
     
     // Preenche todos os quadrados que tenham "overlap"
     for(int j{0}; j < blocos.size(); ++j){
@@ -395,6 +459,25 @@ void regra_1(std::vector<std::pair<int, int>> leftmost, std::vector<std::pair<in
                         afetados.push_back(k);
                         nonograma[idx][k] = 1;
                     }
+                }
+            }
+        }
+    }
+
+    if(leftmost == rightmost){
+        if(eh_coluna){
+            for(int i{0}; i < nonograma.size(); ++i){
+                if(nonograma[i][idx] == -1){
+                    afetados.push_back(i);
+                    nonograma[i][idx] = 0;
+                }
+            }
+        }
+        else{
+            for(int i{0}; i < nonograma[0].size(); ++i){
+                if(nonograma[idx][i] == -1){
+                    afetados.push_back(i);
+                    nonograma[idx][i] = 0;
                 }
             }
         }
@@ -451,8 +534,15 @@ int main(){
 
     // Pré-processamento: percorre as colunas e linhas, e marca os quadrados que são certos de ocorrer
 
+    // std::cout << "Preprocesso colunas..." << std::endl;
     pre_processamento(colunas, nonograma, colunas_completas, false);
+    // PRINT_NONOGRAMA
+    // std::cout << "-----------------" << std::endl;
+
+    //std::cout << "Preprocesso..." << std::endl;
     pre_processamento(linhas, nonograma, linhas_completas, true);
+    //PRINT_NONOGRAMA
+    //std::cout << "-----------------" << std::endl;
 
     std::queue<int> linhas_to_see;
     std::queue<int> colunas_to_see;
@@ -477,75 +567,277 @@ int main(){
     std::vector<int> coluna_nonograma(n_linhas);
     std::vector<std::pair<int, int>> rightmost;
     std::vector<std::pair<int, int>> leftmost;
-    while(!linhas_to_see.empty() || !colunas_to_see.empty()){
-        while(!linhas_to_see.empty()){
-            to_see = linhas_to_see.front();
-            leftmost = mais_a_esquerda(linhas[to_see], nonograma[to_see], soma_linhas[to_see], n_linhas, n_colunas);
-            rightmost = mais_a_direita(linhas[to_see], nonograma[to_see], soma_linhas[to_see], n_linhas, n_colunas);
 
-            // Aplicar regra 1
-            regra_1(leftmost, rightmost, colunas_completas, in_colunas_to_see, colunas_to_see, nonograma, linhas[to_see], to_see);
+    // Tupla de recursão, usada caso não seja possível aplicar mais regras lógicas
+    // Argumento 0 (pair<int, int>): local onde o "chute" foi realizado;
+    // Argumento 1 (vector<vector<int>>): nonograma antes do chute;
+    // Argumento 2 (vector<bool>): vetor de linhas completas;
+    // Argumento 3 (vector<bool>): vetor de colunas completas;
+    // Argumento 4 (bool): identifica se o chute foi X (falso) ou 0 (verdadeiro);
+    std::stack<std::tuple<std::pair<int, int>, std::vector<std::vector<int>>, std::vector<bool>, std::vector<bool>, bool>> pilha_recursiva;
+    bool unsolvable = false;
+    bool absurdo = false;
+
+    while(!is_nonogram_solved(linhas_completas, colunas_completas) || unsolvable){
+
+        //std::cout << "Vou tentar..." << std::endl;
+        //std::cout << "Doidera 0" << std::endl;
+        while(!linhas_to_see.empty() || !colunas_to_see.empty()){
+            if(absurdo){
+                break;
+            }
+            //std::cout << "Doidera 0.5" << std::endl;
+            //std::cout << "Tentando Linhas..." <<std::endl;
+            while(!linhas_to_see.empty()){
+                //std::cout << "Doidera 0.7 " << std::endl;
+                //std::cout << linhas_to_see.size() << std::endl;
+                to_see = linhas_to_see.front();
+                leftmost = mais_a_esquerda(linhas[to_see], nonograma[to_see], soma_linhas[to_see], n_linhas, n_colunas);
+
+                // Ver aqui se deu ruim
+                if(leftmost[0].first == -1){
+                    //std::cout << "ABSURDO!!!!!!!" << std::endl;
+                    absurdo = true;
+                    break;
+                }
+
+                rightmost = mais_a_direita(linhas[to_see], nonograma[to_see], soma_linhas[to_see], n_linhas, n_colunas);
+
+                // Aplicar regra 1
+                regra_1(leftmost, rightmost, colunas_completas, in_colunas_to_see, colunas_to_see, nonograma, linhas[to_see], to_see);
 
 
-            // Aplicar regra 2
+                // Aplicar regra 2
 
-            // Aplicar regra 3
+                // Aplicar regra 3
 
-            // Aplicar regra 4
+                // Aplicar regra 4
 
-            // Aplicar regra 5
+                // Aplicar regra 5
 
-            linhas_to_see.pop();
-            in_linhas_to_see[to_see] = false;
+                if(leftmost == rightmost){
+                    linhas_completas[to_see] = true;
+                }
+
+                linhas_to_see.pop();
+                in_linhas_to_see[to_see] = false;
+
+                //PRINT_NONOGRAMA
+                //std::cout << "-----------------" << std::endl;
+
+            }
+            //std::cout << "Errado 1" << std::endl;
+
+            //std::cout << "Tentando Colunas..." <<std::endl;
+            while(!colunas_to_see.empty()){
+                //std::cout << "Doidera 0.8" << std::endl;
+                //std::cout << colunas_to_see.size() << std::endl;
+                if(absurdo){
+                    break;
+                }
+
+                to_see = colunas_to_see.front();
+
+                for(int i{0}; i < n_linhas; ++i){
+                    coluna_nonograma[i] = nonograma[i][to_see];
+                }
+
+                //std::cout << "to_see:" << to_see << std::endl;
+                //std::cout << "Antes mais a cima" << std::endl;
+
+                leftmost = mais_a_cima(colunas[to_see], coluna_nonograma, soma_colunas[to_see], n_colunas, n_linhas);
+
+                //std::cout << "Depois mais a cima" << std::endl;
+
+                // Ver aqui se deu ruim
+
+                if(leftmost[0].first == -1){
+                    absurdo = true;
+                    break;
+                }
+
+                //std::cout << "Antes mais a baixo" << std::endl;
+
+                rightmost = mais_a_baixo(colunas[to_see], coluna_nonograma, soma_colunas[to_see], n_colunas, n_linhas);
+
+                //std::cout << "Depois mais a baixo" << std::endl;
+                // for(int i{0}; i < leftmost.size(); ++i){
+                //     std::cout << "("<<leftmost[i].first<<","<<leftmost[i].second<<") ";
+                // }
+                // std::cout << std::endl;
+                // for(int i{0}; i < rightmost.size(); ++i){
+                //     std::cout << "("<<rightmost[i].first<<","<<rightmost[i].second<<") ";
+                // }
+                // std::cout << std::endl;
+
+                //std::cout << "Antes regra 1" << std::endl;
+
+                // Aplicar regra 1
+                regra_1(leftmost, rightmost, linhas_completas, in_linhas_to_see, linhas_to_see, nonograma, colunas[to_see], to_see, true);
+
+                //std::cout << "Depois regra 1" << std::endl;
+                // Aplicar regra 2
+
+                // Aplicar regra 3
+
+                // Aplicar regra 4
+
+                // Aplicar regra 5
+
+                if(leftmost == rightmost){
+                    colunas_completas[to_see] = true;
+                }
+
+                colunas_to_see.pop();
+                in_colunas_to_see[to_see] = false;
+
+                //PRINT_NONOGRAMA
+                //std::cout << "-----------------" << std::endl;
+            }
         }
 
-        while(!colunas_to_see.empty()){
-            to_see = colunas_to_see.front();
+        //std::cout << "Errado 2" << std::endl;
 
-            for(int i{0}; i < n_linhas; ++i){
-                coluna_nonograma[i] = nonograma[i][to_see];
+        // std::cout << "Nao consegui, ficou assim:" << std::endl;
+        // PRINT_NONOGRAMA
+        // break;
+        if(absurdo){
+            //std::cout << "Achei absurdo! Voltando pro anterior:" << std::endl;
+            while(!linhas_to_see.empty()){
+                in_linhas_to_see[linhas_to_see.front()] = false;
+                linhas_to_see.pop();
+            }
+            while(!colunas_to_see.empty()){
+                in_colunas_to_see[colunas_to_see.front()] = false;
+                colunas_to_see.pop();
             }
 
-
-            leftmost = mais_a_cima(colunas[to_see], coluna_nonograma, soma_colunas[to_see], n_colunas, n_linhas);
-            rightmost = mais_a_baixo(colunas[to_see], coluna_nonograma, soma_colunas[to_see], n_colunas, n_linhas);
-
-            // Aplicar regra 1
-            regra_1(leftmost, rightmost, linhas_completas, in_linhas_to_see, linhas_to_see, nonograma, colunas[to_see], to_see, true);
-
-            // Aplicar regra 2
-
-            // Aplicar regra 3
-
-            // Aplicar regra 4
-
-            // Aplicar regra 5
-
-            colunas_to_see.pop();
-            in_colunas_to_see[to_see] = false;
-        }
-    }
-
-    // for(int i{0}; i < n_linhas; ++i){
-
-    //     mais_a_esquerda(linhas[i], nonograma[i], soma_linhas[i], n_linhas, n_colunas);
-    // }
-
-
-    for(int i{0}; i < n_linhas; ++i){
-        for(int j{0}; j < n_colunas; ++j){
-            if(nonograma[i][j] == 1){
-                std::cout << "O";
-            }
-            else if(nonograma[i][j] == 0){
-                std::cout << "X";
+            if(pilha_recursiva.empty()){
+                unsolvable = true;
             }
             else{
-                std::cout << " ";
+                if(qual_ultimo_chute == false){
+                    //std::cout << "Vou chutar o " << local_ultimo_chute.first << " " << local_ultimo_chute.second << " com 0, assim:" << std::endl;
+                    qual_ultimo_chute = true;
+                    
+                }
+                else{
+                    //std::cout << "Deu tudo errado, voltando pro penultimo chute...: ";
+                    pilha_recursiva.pop();
+                    if(!pilha_recursiva.empty()){
+
+                        //std::cout << "(" << local_ultimo_chute.first << ", " << local_ultimo_chute.second << ")" << std::endl;
+                    }
+                }
+
+                if(pilha_recursiva.empty()){
+                    unsolvable = true;
+                }
+                else{
+                    nonograma = nonograma_antes;
+                    //PRINT_NONOGRAMA;
+                    linhas_completas = linhas_completadas_antes;
+                    colunas_completas = colunas_completadas_antes;
+
+                    nonograma[local_ultimo_chute.first][local_ultimo_chute.second] = 1;
+                    //PRINT_NONOGRAMA
+                    
+
+                    linhas_to_see.push(local_ultimo_chute.first);
+                    colunas_to_see.push(local_ultimo_chute.second);
+                }
             }
+
+            absurdo = false;
         }
-        std::cout << std::endl;
+        else if(!is_nonogram_solved(linhas_completas, colunas_completas)){
+            // Achar um local pra chutar
+            //std::cout << "Nao consegui, ficou assim:" << std::endl;
+            //PRINT_NONOGRAMA
+
+            // for(int i{0}; i < linhas_completas.size(); ++i){
+            //     if(linhas_completas[i]){
+            //         std::cout << "1 ";
+            //     }
+            //     else{
+            //         std::cout << "0 ";
+            //     }
+            // }
+            // std::cout << std::endl;
+
+            // for(int i{0}; i < colunas_completas.size(); ++i){
+            //     if(colunas_completas[i]){
+            //         std::cout << "1 ";
+            //     }
+            //     else{
+            //         std::cout << "0 ";
+            //     }
+            // }
+            // std::cout << std::endl;
+            
+            //std::cout << "Nao consegui, 1:" << std::endl;
+            std::vector<int> sorteio;
+            std::pair<int, int> local_sorteado = {0, 0};
+            if(rand() % 2){
+                // Sorteia um local com base em uma linha ainda nao completa
+                for(int i{0}; i < linhas_completas.size(); ++i){
+                    if(!linhas_completas[i]){
+                        sorteio.push_back(i);
+                    }
+                }
+
+                std::random_shuffle(sorteio.begin(), sorteio.end());
+
+                for(int i{0}; i < n_colunas; ++i){
+                    if(nonograma[sorteio[0]][i] == -1){
+                        local_sorteado = {sorteio[0], i};
+                        break;
+                    }
+                }
+
+            }
+            else{
+                // Sorteia um local com base em uma coluna ainda nao completa
+                for(int i{0}; i < colunas_completas.size(); ++i){
+                    if(!colunas_completas[i]){
+                        sorteio.push_back(i);
+                    }
+                }
+
+                std::random_shuffle(sorteio.begin(), sorteio.end());
+
+                for(int i{0}; i < n_linhas; ++i){
+                    if(nonograma[i][sorteio[0]] == -1){
+                        local_sorteado = {i, sorteio[0]};
+                        break;
+                    }
+                }
+            }
+
+            //std::cout << "Nao consegui, 2:" << std::endl;
+            // Salvar o estado do nonograma, e qual foi o chute realizado
+            chute_type chute(local_sorteado, nonograma, linhas_completas, colunas_completas, false);
+            pilha_recursiva.push(chute);
+
+            //std::cout << "Nao consegui, 3:" << std::endl;
+            
+            // Fazer o chute
+            nonograma[local_ultimo_chute.first][local_ultimo_chute.second] = 0;
+            //std::cout << "Vou chutar o " << local_sorteado.first << " " << local_sorteado.second << " com X, assim:" << std::endl;
+            //PRINT_NONOGRAMA
+
+            linhas_to_see.push(local_ultimo_chute.first);
+            colunas_to_see.push(local_ultimo_chute.second);
+        }
+        
     }
+
+
+    if(unsolvable){
+        std::cout << "Sem solução :D" << std::endl;
+    }
+
+    PRINT_NONOGRAMA
 
 
     // Metodo exato :D
