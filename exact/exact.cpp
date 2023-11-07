@@ -464,6 +464,74 @@ void regra_1(std::vector<std::pair<int, int>> leftmost, std::vector<std::pair<in
         }
     }
 
+
+    atualiza_afetados(afetados, completados, in_to_be_seen, to_be_seen);
+
+}
+
+void regra_2(std::vector<std::pair<int, int>> leftmost, std::vector<std::pair<int, int>> rightmost,
+             std::vector<bool> completados, std::vector<bool>& in_to_be_seen, std::queue<int>&to_be_seen,
+             std::vector<std::vector<int>>& nonograma, std::vector<int> blocos, int idx, bool eh_coluna = false){
+
+    
+    std::vector<int> afetados;
+
+    // Vê os quadrados entre o canto da esquerda e o primeiro bloco leftmost
+    for(int i{0}; i < leftmost[0].first; ++i){
+        if(eh_coluna){
+            if(nonograma[i][idx] == -1){
+                afetados.push_back(i);
+                nonograma[i][idx] = 0;
+            }
+            
+        }
+        else{
+            if(nonograma[idx][i] == -1){
+                afetados.push_back(i);
+                nonograma[idx][i] = 0;
+            }
+        }
+    }
+
+    // Vê os quadrados entre o canto da direita e o ultimo bloco rightmost
+    for(int i{rightmost[rightmost.size()-1].second + 1}; i < (eh_coluna ? nonograma.size() : nonograma[0].size()); ++i){
+        if(eh_coluna){
+            if(nonograma[i][idx] == -1){
+                afetados.push_back(i);
+                nonograma[i][idx] = 0;
+            }
+            
+        }
+        else{
+            if(nonograma[idx][i] == -1){
+                afetados.push_back(i);
+                nonograma[idx][i] = 0;
+            }
+        }
+    }
+
+    // Vê os quadrados entre cada leftmost e rightmost
+    for(int i{0}; i < blocos.size() - 1; ++i){
+        if(rightmost[i].second - leftmost[i+1].first < 0){
+            for(int j{rightmost[i].second+ 1}; j < leftmost[i+1].first; ++j){
+                if(eh_coluna){
+                    if(nonograma[j][idx] == -1){
+                        afetados.push_back(j);
+                        nonograma[j][idx] = 0;
+                    }
+                    
+                }
+                else{
+                    if(nonograma[idx][j] == -1){
+                        afetados.push_back(j);
+                        nonograma[idx][j] = 0;
+                    }
+                }
+            }
+        }
+    }
+
+
     if(leftmost == rightmost){
         if(eh_coluna){
             for(int i{0}; i < nonograma.size(); ++i){
@@ -608,6 +676,7 @@ int main(){
 
 
                 // Aplicar regra 2
+                regra_2(leftmost, rightmost, colunas_completas, in_colunas_to_see, colunas_to_see, nonograma, linhas[to_see], to_see);
 
                 // Aplicar regra 3
 
@@ -677,6 +746,7 @@ int main(){
 
                 //std::cout << "Depois regra 1" << std::endl;
                 // Aplicar regra 2
+                regra_2(leftmost, rightmost, linhas_completas, in_linhas_to_see, linhas_to_see, nonograma, colunas[to_see], to_see, true);
 
                 // Aplicar regra 3
 
