@@ -6,7 +6,7 @@
 #define qual_ultimo_chute std::get<4>(pilha_recursiva.top())
 #define chute_type std::tuple<std::pair<int, int>, std::vector<std::vector<int>>, std::vector<bool>, std::vector<bool>, bool>
 
-#define PRINT_NONOGRAMA for(int i{0}; i < n_linhas; ++i){for(int j{0}; j < n_colunas; ++j){if(nonograma[i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
+#define PRINT_NONOGRAMA for(int i{0}; i < nonograma.size(); ++i){for(int j{0}; j < nonograma[0].size(); ++j){if(nonograma[i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
 
 std::vector<std::vector<int>> triangulo_pascal({{1}});
 
@@ -402,46 +402,6 @@ void regra_1(std::vector<std::pair<int, int>> leftmost, std::vector<std::pair<in
 
     
     std::vector<int> afetados;
-
-
-    // // TODO: ADAPTAR PRA REGRA 2
-    // if(leftmost == rightmost){
-
-    //     std::vector<std::pair<int, int>> blau = {{0, -1}};
-    //     for(int i{0}; i < leftmost.size(); ++i){
-    //         blau.push_back(leftmost[i]);
-    //     }
-    //     if(eh_coluna){
-
-    //         blau.push_back({nonograma[0].size(), nonograma[0].size()});
-    //     }
-    //     else{
-    //         blau.push_back({nonograma.size(), nonograma.size()});
-    //     }
-
-
-    //     // Preenche todos os X
-    //     for(int j{0}; j < blocos.size() + 1; ++j){
-    //         if(blau[j+1].first - blau[j].second > 0){
-
-    //             for(int k{blau[j].second + 1}; k <= blau[j+1].first - 1; ++k){
-    //                 if(eh_coluna){
-    //                     if(nonograma[k][idx] == -1){
-    //                         afetados.push_back(k);
-    //                         nonograma[k][idx] = 0;
-    //                     }
-    //                 }
-    //                 else{
-    //                     if(nonograma[idx][k] == -1){
-    //                         afetados.push_back(k);
-    //                         nonograma[idx][k] = 0;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    // }
     
     // Preenche todos os quadrados que tenham "overlap"
     for(int j{0}; j < blocos.size(); ++j){
@@ -551,6 +511,204 @@ void regra_2(std::vector<std::pair<int, int>> leftmost, std::vector<std::pair<in
         }
     }
 
+
+    atualiza_afetados(afetados, completados, in_to_be_seen, to_be_seen);
+
+}
+
+void regra_3(std::vector<std::pair<int, int>> leftmost, std::vector<std::pair<int, int>> rightmost,
+             std::vector<bool> completados, std::vector<bool>& in_to_be_seen, std::queue<int>&to_be_seen,
+             std::vector<std::vector<int>>& nonograma, std::vector<int> blocos, int idx, bool eh_coluna = false){
+
+    
+    // std::cout << "abacate1" << std::endl;
+    std::vector<int> afetados;
+
+    std::vector<int> pos_0x;
+    std::vector<int> pos_x0;
+    // Procura por X0 ou 0X na linha/coluna
+    if(eh_coluna){
+
+        for(int i{0}; i < nonograma.size() - 1; ++i){
+            if(nonograma[i][idx] == 1 && nonograma[i+1][idx] == 0){
+                pos_0x.push_back(i);
+                ++i;
+            }
+            else if(nonograma[i][idx] == 0 && nonograma[i+1][idx] == 1){
+                pos_x0.push_back(i+1);
+                ++i;
+            }
+        }
+    }
+    else{
+
+        for(int i{0}; i < nonograma[0].size() - 1; ++i){
+            if(nonograma[idx][i] == 1 && nonograma[idx][i + 1] == 0){
+                pos_0x.push_back(i);
+                ++i;
+            }
+            else if(nonograma[idx][i] == 0 && nonograma[idx][i + 1] == 1){
+                pos_x0.push_back(i+1);
+                ++i;
+            }
+        }
+
+    }
+
+    // std::cout << "abacate2" << std::endl;
+
+    std::vector<std::pair<int, int>> leftmost_rightmost_0x(pos_0x.size());
+    std::vector<std::pair<int, int>> leftmost_rightmost_x0(pos_x0.size());
+    int count_0x = 0;
+    int count_x0 = 0;
+    // std::cout << " " << blocos.size() << " " << leftmost.size() << " " <<rightmost.size() << std::endl;
+    // Para os 0X e X0, achar os blocos leftmost que contem o 0
+    for(int i{0}; i < blocos.size(); ++i){
+        if(count_0x < pos_0x.size()){
+
+            if(pos_0x[count_0x] >= leftmost[i].first && pos_0x[count_0x] <= leftmost[i].second){
+                leftmost_rightmost_0x[count_0x].first = i;
+                count_0x++;
+            }
+        }
+
+        if(count_x0 < pos_x0.size()){
+            if(pos_x0[count_x0] >= leftmost[i].first && pos_x0[count_x0] <= leftmost[i].second){
+                leftmost_rightmost_x0[count_x0].first = i;
+                count_x0++;
+            }
+        }
+    }
+    // std::cout << "abacate3" << std::endl;
+    count_0x = 0;
+    count_x0 = 0;
+
+    // Para os 0X e X0, achar os blocos rightmost que contem o 0
+    for(int i{0}; i < blocos.size(); ++i){
+        if(count_0x < pos_0x.size()){
+            if(pos_0x[count_0x] >= rightmost[i].first && pos_0x[count_0x] <= rightmost[i].second){
+                leftmost_rightmost_0x[count_0x].second = i;
+                count_0x++;
+            }
+        }
+
+        if(count_x0 < pos_x0.size()){
+            if(pos_x0[count_x0] >= rightmost[i].first && pos_x0[count_x0] <= rightmost[i].second){
+                leftmost_rightmost_x0[count_x0].second = i;
+                count_x0++;
+            }
+        }
+    }
+
+    
+    // std::cout << "abacate4 countx0 = " << std::endl;
+    // std::cout << count_x0 << std::endl;
+    // std::cout << "abacate4 posx0[0] = " << std::endl;
+    // if(!pos_x0.empty()){
+
+    //     std::cout << pos_x0[0] << std::endl;
+    // }
+    // std::cout << "abacate4 rightmost = " << std::endl;
+    // for(int i{0}; i < rightmost.size(); ++i){
+    //     std::cout << "("<<rightmost[i].first<<","<<rightmost[i].second<<") ";
+    // }
+    // std::cout << "abacate4 idx = " << idx << std::endl;
+
+    // std::cout << "abacate42 count0x = " << std::endl;
+    // std::cout << count_0x << std::endl;
+    // std::cout << "abacate42 pos0x[0] = " << std::endl;
+    // if(!pos_0x.empty()){
+
+    //     std::cout << pos_0x[0] << std::endl;
+    // }
+
+
+
+
+    int min_0x;
+    int min_x0;
+    // Verifica o menor dos blocos entre leftmost0x e rightmost0x, e aloca o menor dos blocos
+    for(int i{0}; i < leftmost_rightmost_0x.size(); ++i){
+        // std::cout << "A" << std::endl;
+        min_0x = INT_MAX;
+        // std::cout << leftmost_rightmost_0x[i].first << " " << leftmost_rightmost_0x[i].second << std::endl;
+        for(int j{leftmost_rightmost_0x[i].second}; j <= leftmost_rightmost_0x[i].first; ++j){
+            if(blocos[j] < min_0x){
+                min_0x = blocos[j];
+            }
+        }
+
+        // std::cout << min_0x << std::endl;
+        // std::cout << "B" << std::endl;
+
+
+        for(int j{pos_0x[i] - min_0x + 1}; j < pos_0x[i]; ++j){
+
+            if(eh_coluna){
+                if(nonograma[j][idx] == -1){
+                    afetados.push_back(j);
+                    nonograma[j][idx] = 1;
+                }
+            }
+            else{
+                if(nonograma[idx][j] == -1){
+                    afetados.push_back(j);
+                    nonograma[idx][j] = 1;
+                }
+            }
+        }
+    }
+
+    // std::cout << "Abacate 5" << std::endl;
+
+    // Verifica o menor dos blocos entre leftmostx0 e rightmostx0, e aloca o menor dos blocos
+    for(int i{0}; i < leftmost_rightmost_x0.size(); ++i){
+        
+        auto a = leftmost_rightmost_x0[i].first;
+        // std::cout << "C" << std::endl;
+        min_x0 = INT_MAX;
+        // std::cout << leftmost_rightmost_x0[i].first << " " << leftmost_rightmost_x0[i].second << std::endl;
+        for(int j{leftmost_rightmost_x0[i].second}; j <= leftmost_rightmost_x0[i].first ; ++j){
+            // std::cout << "j = " << j << std::endl;
+            if(blocos[j] < min_x0){
+                min_x0 = blocos[j];
+            }
+        }
+
+        // std::cout << min_x0 <<std::endl;
+        // std::cout << "D" << std::endl;
+
+
+        for(int j{pos_x0[i] + 1}; j < pos_x0[i] + min_x0; ++j){
+            
+            if(eh_coluna){
+                // std::cout << "eh j = "<< j << std::endl;
+                if(nonograma[j][idx] == -1){
+                    afetados.push_back(j);
+                    nonograma[j][idx] = 1;
+                }
+            }
+            else{
+                if(nonograma[idx][j] == -1){
+                    // std::cout << "eh j = "<< j << std::endl;
+                    afetados.push_back(j);
+                    nonograma[idx][j] = 1;
+                }
+            }
+        }
+        
+    }
+
+    // std::cout << "Abacate 6" << std::endl;
+
+    // if (!afetados.empty()){
+    //     std::cout << "Deu certo no indice " << idx << ": "<< std::endl;
+    //     PRINT_NONOGRAMA;
+    //     std::cout << "-----------------------------------------" << std::endl;
+    // }
+
+    
+
     atualiza_afetados(afetados, completados, in_to_be_seen, to_be_seen);
 
 }
@@ -648,14 +806,16 @@ int main(){
 
     while(!is_nonogram_solved(linhas_completas, colunas_completas) || unsolvable){
 
-        //std::cout << "Vou tentar..." << std::endl;
+        // std::cout << "Vou tentar..." << std::endl;
+
+        // PRINT_NONOGRAMA
         //std::cout << "Doidera 0" << std::endl;
+        //std::cout << "Tentando linhas..." << std::endl;
         while(!linhas_to_see.empty() || !colunas_to_see.empty()){
             if(absurdo){
                 break;
             }
-            //std::cout << "Doidera 0.5" << std::endl;
-            //std::cout << "Tentando Linhas..." <<std::endl;
+            // std::cout << "Tentando Linhas..." <<std::endl;
             while(!linhas_to_see.empty()){
                 //std::cout << "Doidera 0.7 " << std::endl;
                 //std::cout << linhas_to_see.size() << std::endl;
@@ -678,8 +838,12 @@ int main(){
                 // Aplicar regra 2
                 regra_2(leftmost, rightmost, colunas_completas, in_colunas_to_see, colunas_to_see, nonograma, linhas[to_see], to_see);
 
+                // PRINT_NONOGRAMA
+                // std::cout << "Antes regra 3" << std::endl;
                 // Aplicar regra 3
+                regra_3(leftmost, rightmost, colunas_completas, in_colunas_to_see, colunas_to_see, nonograma, linhas[to_see], to_see);
 
+                // std::cout << "Antes regra 4" << std::endl;
                 // Aplicar regra 4
 
                 // Aplicar regra 5
@@ -695,9 +859,8 @@ int main(){
                 //std::cout << "-----------------" << std::endl;
 
             }
-            //std::cout << "Errado 1" << std::endl;
 
-            //std::cout << "Tentando Colunas..." <<std::endl;
+            // std::cout << "Tentando Colunas..." <<std::endl;
             while(!colunas_to_see.empty()){
                 //std::cout << "Doidera 0.8" << std::endl;
                 //std::cout << colunas_to_see.size() << std::endl;
@@ -739,17 +902,21 @@ int main(){
                 // }
                 // std::cout << std::endl;
 
-                //std::cout << "Antes regra 1" << std::endl;
+                // std::cout << "Antes regra 1" << std::endl;
 
                 // Aplicar regra 1
                 regra_1(leftmost, rightmost, linhas_completas, in_linhas_to_see, linhas_to_see, nonograma, colunas[to_see], to_see, true);
 
-                //std::cout << "Depois regra 1" << std::endl;
+                // std::cout << "Antes regra 2" << std::endl;
                 // Aplicar regra 2
                 regra_2(leftmost, rightmost, linhas_completas, in_linhas_to_see, linhas_to_see, nonograma, colunas[to_see], to_see, true);
 
+                // std::cout << "Antes regra 3" << std::endl;
+                // PRINT_NONOGRAMA
                 // Aplicar regra 3
+                regra_3(leftmost, rightmost, linhas_completas, in_linhas_to_see, linhas_to_see, nonograma, colunas[to_see], to_see, true);
 
+                // std::cout << "Antes regra 4" << std::endl;
                 // Aplicar regra 4
 
                 // Aplicar regra 5
@@ -770,9 +937,22 @@ int main(){
 
         // std::cout << "Nao consegui, ficou assim:" << std::endl;
         // PRINT_NONOGRAMA
-        // break;
+        // // break;
+        // std::cout << "Lista de chutes até agora: " << std::endl;
+        // std::stack<std::tuple<std::pair<int, int>, std::vector<std::vector<int>>, std::vector<bool>, std::vector<bool>, bool>> chutes;
+        
+        // auto pilha_falsa = pilha_recursiva;
+        // while (!pilha_falsa.empty()){
+        //     chutes.push(pilha_falsa.top());
+        //     pilha_falsa.pop();
+        // }
+        // while (!chutes.empty()){
+        //     std::cout << "[(" << std::get<0>(chutes.top()).first << "," << std::get<0>(chutes.top()).second << "), " << (std::get<4>(chutes.top()) ? 1 : 0) << " ] / "; 
+        //     chutes.pop();
+        // }
+        // std::cout << std::endl;
         if(absurdo){
-            //std::cout << "Achei absurdo! Voltando pro anterior:" << std::endl;
+            // std::cout << "Achei absurdo! Voltando pro anterior:" << std::endl;
             while(!linhas_to_see.empty()){
                 in_linhas_to_see[linhas_to_see.front()] = false;
                 linhas_to_see.pop();
@@ -787,17 +967,18 @@ int main(){
             }
             else{
                 if(qual_ultimo_chute == false){
-                    //std::cout << "Vou chutar o " << local_ultimo_chute.first << " " << local_ultimo_chute.second << " com 0, assim:" << std::endl;
+                    
                     qual_ultimo_chute = true;
                     
                 }
                 else{
-                    //std::cout << "Deu tudo errado, voltando pro penultimo chute...: ";
-                    pilha_recursiva.pop();
-                    if(!pilha_recursiva.empty()){
-
-                        //std::cout << "(" << local_ultimo_chute.first << ", " << local_ultimo_chute.second << ")" << std::endl;
+                    while(!pilha_recursiva.empty() && qual_ultimo_chute == true){
+                        pilha_recursiva.pop();
                     }
+                    if(!pilha_recursiva.empty()){
+                        qual_ultimo_chute = true;
+                    }
+                    
                 }
 
                 if(pilha_recursiva.empty()){
