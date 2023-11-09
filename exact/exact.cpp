@@ -1,4 +1,7 @@
 #include <bits/stdc++.h>
+#include <stdio.h>
+#include <time.h>
+#include <unistd.h>
 #define local_ultimo_chute std::get<0>(pilha_recursiva.top())
 #define nonograma_antes std::get<1>(pilha_recursiva.top())
 #define linhas_completadas_antes std::get<2>(pilha_recursiva.top())
@@ -6,7 +9,7 @@
 #define qual_ultimo_chute std::get<4>(pilha_recursiva.top())
 #define chute_type std::tuple<std::pair<int, int>, std::vector<std::vector<int>>, std::vector<bool>, std::vector<bool>, bool>
 
-#define PRINT_NONOGRAMA for(int i{0}; i < nonograma.size(); ++i){for(int j{0}; j < nonograma[0].size(); ++j){if(nonograma[i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
+#define PRINT_NONOGRAMA for(int i{0}; i < nonograma.size(); ++i){for(int j{0}; j < nonograma[0].size(); ++j){if(nonograma[i][j] == 1){std::cout << "O";}else if(nonograma[i][j] == 0){std::cout << "X";}else{std::cout << " ";}}std::cout << std::endl;}
 
 std::vector<std::vector<int>> triangulo_pascal({{1}});
 
@@ -713,6 +716,103 @@ void regra_3(std::vector<std::pair<int, int>> leftmost, std::vector<std::pair<in
 
 }
 
+void regra_4(std::vector<std::pair<int, int>> leftmost, std::vector<std::pair<int, int>> rightmost,
+             std::vector<bool> completados, std::vector<bool>& in_to_be_seen, std::queue<int>&to_be_seen,
+             std::vector<std::vector<int>>& nonograma, std::vector<int> blocos, int idx, bool eh_coluna = false){
+
+    
+    std::vector<int> afetados;
+    
+    int left_range;
+    int right_range;
+    int tamanho_bloco;
+    std::vector<std::pair<int, int>> espacos;
+    for(int i{0}; i < blocos.size(); ++i){
+        tamanho_bloco = blocos[i];
+        left_range = leftmost[i].second;
+        right_range = rightmost[i].first;
+
+        if(i == 0 && i == blocos.size() - 1){
+            continue;
+        }
+        else if(i == 0){
+            if(leftmost[i+1].first < right_range){
+                right_range = leftmost[i+1].first;
+            }
+        }
+        else if(i == blocos.size() - 1){
+            if(rightmost[i-1].second > left_range){
+                left_range = rightmost[i-1].second;
+            }
+        }
+        else{
+
+            if(leftmost[i+1].first < right_range){
+                right_range = leftmost[i+1].first;
+            }
+            if(rightmost[i-1].second > left_range){
+                left_range = rightmost[i-1].second;
+            }
+        }
+
+        // Procura por espacos em branco rodados de X de tamanho menor que tamanho_bloco
+        std::pair<int, int> buraco;
+        bool fim_buraco;
+        int tamanho_buraco;
+        for(int j{left_range + 1}; j < right_range; ++j){
+            
+            if( eh_coluna ? (nonograma[j][idx] == 0 && nonograma[j+1][idx] == -1) : (nonograma[idx][j] == 0 && nonograma[idx][j+1] == -1)){
+                ++j;
+                buraco.first = j;
+                tamanho_buraco = 1;
+                fim_buraco = false;
+
+                while(j < right_range && nonograma[eh_coluna? j : idx][eh_coluna? idx : j] == -1){
+                    ++tamanho_buraco;
+                    ++j;
+                }
+                buraco.second = nonograma[eh_coluna? j - 1 : idx][eh_coluna? idx : j-1];
+
+                if(tamanho_buraco < tamanho_bloco){
+                    espacos.push_back(buraco);
+                }
+
+            }
+            
+        }
+
+        
+    }
+
+    for(int i{0}; i < espacos.size(); ++i){
+        for(int j{espacos[i].first}; j <= espacos[i].second; ++j){
+            if(eh_coluna){
+                if(nonograma[j][idx] == -1){
+                    afetados.push_back(j);
+                    nonograma[j][idx] = 0;
+                }
+            }
+            else{
+                if(nonograma[idx][j] == -1){
+                    afetados.push_back(j);
+                    nonograma[idx][j] = 0;
+                }
+            }
+        }
+    }
+
+    // if (!afetados.empty()){
+    //     std::cout << "Deu certo no indice " << idx << ": "<< std::endl;
+    //     PRINT_NONOGRAMA;
+    //     std::cout << "-----------------------------------------" << std::endl;
+    //     sleep(5000);
+    // }
+
+
+    atualiza_afetados(afetados, completados, in_to_be_seen, to_be_seen);
+
+}
+
 int main(){
     std::srand ( unsigned ( std::time(0) ) );
 
@@ -838,13 +938,14 @@ int main(){
                 // Aplicar regra 2
                 regra_2(leftmost, rightmost, colunas_completas, in_colunas_to_see, colunas_to_see, nonograma, linhas[to_see], to_see);
 
-                // PRINT_NONOGRAMA
                 // std::cout << "Antes regra 3" << std::endl;
                 // Aplicar regra 3
                 regra_3(leftmost, rightmost, colunas_completas, in_colunas_to_see, colunas_to_see, nonograma, linhas[to_see], to_see);
+                // PRINT_NONOGRAMA
 
                 // std::cout << "Antes regra 4" << std::endl;
                 // Aplicar regra 4
+                regra_4(leftmost, rightmost, colunas_completas, in_colunas_to_see, colunas_to_see, nonograma, linhas[to_see], to_see);
 
                 // Aplicar regra 5
 
@@ -912,12 +1013,13 @@ int main(){
                 regra_2(leftmost, rightmost, linhas_completas, in_linhas_to_see, linhas_to_see, nonograma, colunas[to_see], to_see, true);
 
                 // std::cout << "Antes regra 3" << std::endl;
-                // PRINT_NONOGRAMA
                 // Aplicar regra 3
                 regra_3(leftmost, rightmost, linhas_completas, in_linhas_to_see, linhas_to_see, nonograma, colunas[to_see], to_see, true);
 
+                // PRINT_NONOGRAMA
                 // std::cout << "Antes regra 4" << std::endl;
                 // Aplicar regra 4
+                regra_4(leftmost, rightmost, linhas_completas, in_linhas_to_see, linhas_to_see, nonograma, colunas[to_see], to_see, true);
 
                 // Aplicar regra 5
 
