@@ -7,7 +7,9 @@
 #define linhas_completadas_antes std::get<2>(pilha_recursiva.top())
 #define colunas_completadas_antes std::get<3>(pilha_recursiva.top())
 #define qual_ultimo_chute std::get<4>(pilha_recursiva.top())
-#define chute_type std::tuple<std::pair<int, int>, std::vector<std::vector<int>>, std::vector<bool>, std::vector<bool>, bool>
+#define magic_numbers_linhas_antes std::get<5>(pilha_recursiva.top())
+#define magic_numbers_colunas_antes std::get<5>(pilha_recursiva.top())
+#define chute_type std::tuple<std::pair<int, int>, std::vector<std::vector<int>>, std::vector<bool>, std::vector<bool>, bool, std::vector<std::pair<int, int>>, std::vector<std::pair<int, int>>>
 
 #define PRINT_NONOGRAMA for(int i{0}; i < nonograma.size(); ++i){for(int j{0}; j < nonograma[0].size(); ++j){if(nonograma[i][j] == 1){std::cout << "O";}else if(nonograma[i][j] == 0){std::cout << "X";}else{std::cout << " ";}}std::cout << std::endl;}
 
@@ -292,7 +294,7 @@ bool linha_valida(const std::vector<bool>& linha, const std::vector<int>& linha_
 
 std::vector<std::pair<int, int>> mais_a_cima
 (std::vector<int>coluna, std::vector<int>coluna_nonograma,
- int soma_coluna, int n_colunas, int n_linhas, bool maisabaixo = false){
+ int soma_coluna, int n_colunas, int n_linhas, int& magic_number, bool maisabaixo = false){
 
 
     int quadrados_vazios = n_linhas - soma_coluna; // Número de quadrados vazios necessários nessa linha
@@ -310,7 +312,15 @@ std::vector<std::pair<int, int>> mais_a_cima
         // std::cout << "reverted!" << std::endl;
         std::reverse(numeros_sorteados.begin(), numeros_sorteados.end());
     }
+    int count = 0;
     for(int j : numeros_sorteados){
+        count++;
+        if(maisabaixo){
+            j += 1 - magic_number;
+        }
+        else{
+            j += magic_number - 1;
+        }
         // Converte o número sorteado à respectiva alocação de blocos
         vetor_sorteado = convert_number(j, quadrados_vazios, coluna.size(), n_linhas, coluna);
         // std::cout << "Vetor Sorteado: ";
@@ -323,6 +333,7 @@ std::vector<std::pair<int, int>> mais_a_cima
             // for(int p = 0; p < vetor_sorteado.size(); ++p){
             //     std::cout << vetor_sorteado[p] << " \n"[p == vetor_sorteado.size() - 1];
             // }
+            magic_number = (maisabaixo ? combinao - j + 1 : j);
             int current_bloco = 0;
             for(int i{0}; i < vetor_sorteado.size(); ++i){
 
@@ -349,23 +360,23 @@ std::vector<std::pair<int, int>> mais_a_cima
 
 std::vector<std::pair<int, int>> mais_a_baixo
 (std::vector<int>coluna, std::vector<int>coluna_nonograma,
-int soma_coluna, int n_colunas, int n_linhas){
+int soma_coluna, int n_colunas, int n_linhas, int& magic_number){
 
-    return mais_a_cima(coluna, coluna_nonograma, soma_coluna, n_colunas, n_linhas, true);
+    return mais_a_cima(coluna, coluna_nonograma, soma_coluna, n_colunas, n_linhas, magic_number, true);
 }
 
 std::vector<std::pair<int, int>> mais_a_esquerda
 (std::vector<int>linha, std::vector<int>linha_nonograma,
- int soma_linha, int n_linhas, int n_colunas){
+ int soma_linha, int n_linhas, int n_colunas, int& magic_number){
 
-    return mais_a_cima(linha, linha_nonograma, soma_linha, n_linhas, n_colunas);
+    return mais_a_cima(linha, linha_nonograma, soma_linha, n_linhas, n_colunas, magic_number);
 }
 
 std::vector<std::pair<int, int>> mais_a_direita
 ( std::vector<int>linha, std::vector<int>linha_nonograma,
-  int soma_linha, int n_linhas, int n_colunas){
+  int soma_linha, int n_linhas, int n_colunas, int& magic_number){
 
-    return mais_a_cima(linha, linha_nonograma, soma_linha, n_linhas, n_colunas, true);
+    return mais_a_cima(linha, linha_nonograma, soma_linha, n_linhas, n_colunas, magic_number, true);
 }
 
 bool is_nonogram_solved(std::vector<bool> linhas_completadas, std::vector<bool> colunas_completadas){
@@ -857,6 +868,8 @@ int main(){
 
     std::vector<bool> linhas_completas(n_linhas);
     std::vector<bool> colunas_completas(n_colunas);
+    std::vector<std::pair<int, int>> magic_numbers_linhas(n_linhas, {1,1});
+    std::vector<std::pair<int, int>> magic_numbers_colunas(n_colunas, {1,1});
 
     // Pré-processamento: percorre as colunas e linhas, e marca os quadrados que são certos de ocorrer
 
@@ -900,7 +913,9 @@ int main(){
     // Argumento 2 (vector<bool>): vetor de linhas completas;
     // Argumento 3 (vector<bool>): vetor de colunas completas;
     // Argumento 4 (bool): identifica se o chute foi X (falso) ou 0 (verdadeiro);
-    std::stack<std::tuple<std::pair<int, int>, std::vector<std::vector<int>>, std::vector<bool>, std::vector<bool>, bool>> pilha_recursiva;
+    // Argumento 5 (vector<pair<int,int>>): identifica quais as ultimas combinações testadas na linha (leftmost e rightmost)
+    // Argumento 6 (vector<pair<int,int>>): identifica quais as ultimas combinações testadas na coluna (leftmost e rightmost)
+    std::stack<std::tuple<std::pair<int, int>, std::vector<std::vector<int>>, std::vector<bool>, std::vector<bool>, bool, std::vector<std::pair<int,int>>, std::vector<std::pair<int,int>>>> pilha_recursiva;
     bool unsolvable = false;
     bool absurdo = false;
 
@@ -920,7 +935,7 @@ int main(){
                 //std::cout << "Doidera 0.7 " << std::endl;
                 //std::cout << linhas_to_see.size() << std::endl;
                 to_see = linhas_to_see.front();
-                leftmost = mais_a_esquerda(linhas[to_see], nonograma[to_see], soma_linhas[to_see], n_linhas, n_colunas);
+                leftmost = mais_a_esquerda(linhas[to_see], nonograma[to_see], soma_linhas[to_see], n_linhas, n_colunas, magic_numbers_linhas[to_see].first);
 
                 // Ver aqui se deu ruim
                 if(leftmost[0].first == -1){
@@ -929,7 +944,7 @@ int main(){
                     break;
                 }
 
-                rightmost = mais_a_direita(linhas[to_see], nonograma[to_see], soma_linhas[to_see], n_linhas, n_colunas);
+                rightmost = mais_a_direita(linhas[to_see], nonograma[to_see], soma_linhas[to_see], n_linhas, n_colunas, magic_numbers_linhas[to_see].second);
 
                 // Aplicar regra 1
                 regra_1(leftmost, rightmost, colunas_completas, in_colunas_to_see, colunas_to_see, nonograma, linhas[to_see], to_see);
@@ -978,7 +993,7 @@ int main(){
                 //std::cout << "to_see:" << to_see << std::endl;
                 //std::cout << "Antes mais a cima" << std::endl;
 
-                leftmost = mais_a_cima(colunas[to_see], coluna_nonograma, soma_colunas[to_see], n_colunas, n_linhas);
+                leftmost = mais_a_cima(colunas[to_see], coluna_nonograma, soma_colunas[to_see], n_colunas, n_linhas, magic_numbers_colunas[to_see].first);
 
                 //std::cout << "Depois mais a cima" << std::endl;
 
@@ -991,7 +1006,7 @@ int main(){
 
                 //std::cout << "Antes mais a baixo" << std::endl;
 
-                rightmost = mais_a_baixo(colunas[to_see], coluna_nonograma, soma_colunas[to_see], n_colunas, n_linhas);
+                rightmost = mais_a_baixo(colunas[to_see], coluna_nonograma, soma_colunas[to_see], n_colunas, n_linhas, magic_numbers_colunas[to_see].second);
 
                 //std::cout << "Depois mais a baixo" << std::endl;
                 // for(int i{0}; i < leftmost.size(); ++i){
@@ -1092,6 +1107,9 @@ int main(){
                     linhas_completas = linhas_completadas_antes;
                     colunas_completas = colunas_completadas_antes;
 
+                    magic_numbers_linhas = magic_numbers_linhas_antes;
+                    magic_numbers_colunas = magic_numbers_colunas_antes;
+
                     nonograma[local_ultimo_chute.first][local_ultimo_chute.second] = 1;
                     //PRINT_NONOGRAMA
                     
@@ -1169,7 +1187,7 @@ int main(){
 
             //std::cout << "Nao consegui, 2:" << std::endl;
             // Salvar o estado do nonograma, e qual foi o chute realizado
-            chute_type chute(local_sorteado, nonograma, linhas_completas, colunas_completas, false);
+            chute_type chute(local_sorteado, nonograma, linhas_completas, colunas_completas, false, magic_numbers_linhas, magic_numbers_colunas);
             pilha_recursiva.push(chute);
 
             //std::cout << "Nao consegui, 3:" << std::endl;
