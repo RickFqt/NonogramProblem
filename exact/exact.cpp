@@ -8,10 +8,10 @@
 #define colunas_completadas_antes std::get<3>(pilha_recursiva.top())
 #define qual_ultimo_chute std::get<4>(pilha_recursiva.top())
 #define magic_numbers_linhas_antes std::get<5>(pilha_recursiva.top())
-#define magic_numbers_colunas_antes std::get<5>(pilha_recursiva.top())
+#define magic_numbers_colunas_antes std::get<6>(pilha_recursiva.top())
 #define chute_type std::tuple<std::pair<int, int>, std::vector<std::vector<int>>, std::vector<bool>, std::vector<bool>, bool, std::vector<std::pair<int, int>>, std::vector<std::pair<int, int>>>
 
-#define PRINT_NONOGRAMA for(int i{0}; i < nonograma.size(); ++i){for(int j{0}; j < nonograma[0].size(); ++j){if(nonograma[i][j] == 1){std::cout << "O";}else if(nonograma[i][j] == 0){std::cout << "X";}else{std::cout << " ";}}std::cout << std::endl;}
+#define PRINT_NONOGRAMA for(int i{0}; i < nonograma.size(); ++i){for(int j{0}; j < nonograma[0].size(); ++j){if(nonograma[i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
 
 std::vector<std::vector<int>> triangulo_pascal({{1}});
 
@@ -308,40 +308,42 @@ std::vector<std::pair<int, int>> mais_a_cima
         numeros_sorteados.push_back(i);
     }
 
+    // leftmost
+    // 1 2 3 4 5 6 7 8
+    //   A
+
+    // rightmost
+    // 8 7 6 5 4 3 2 1
     if(maisabaixo){
         // std::cout << "reverted!" << std::endl;
         std::reverse(numeros_sorteados.begin(), numeros_sorteados.end());
     }
-    int count = 0;
-    for(int j : numeros_sorteados){
-        count++;
-        if(maisabaixo){
-            j += 1 - magic_number;
-        }
-        else{
-            j += magic_number - 1;
-        }
+
+    for(int i{ magic_number}; i < numeros_sorteados.size(); ++i){
+        int j = numeros_sorteados[i];
+
         // Converte o número sorteado à respectiva alocação de blocos
         vetor_sorteado = convert_number(j, quadrados_vazios, coluna.size(), n_linhas, coluna);
         // std::cout << "Vetor Sorteado: ";
         //     for(int p = 0; p < vetor_sorteado.size(); ++p){
         //         std::cout << vetor_sorteado[p] << " \n"[p == vetor_sorteado.size() - 1];
         //     }
+
         if(linha_valida(vetor_sorteado, coluna_nonograma)){
 
             // std::cout << "Vetor Que deu Certo: ";
             // for(int p = 0; p < vetor_sorteado.size(); ++p){
             //     std::cout << vetor_sorteado[p] << " \n"[p == vetor_sorteado.size() - 1];
             // }
-            magic_number = (maisabaixo ? combinao - j + 1 : j);
+            magic_number = i;
             int current_bloco = 0;
-            for(int i{0}; i < vetor_sorteado.size(); ++i){
+            for(int j{0}; j < vetor_sorteado.size(); ++j){
 
-                if(vetor_sorteado[i]){
+                if(vetor_sorteado[j]){
 
                     
-                    inicio_fim.push_back({i, i + coluna[current_bloco] - 1});
-                    i += coluna[current_bloco] - 1;
+                    inicio_fim.push_back({j, j + coluna[current_bloco] - 1});
+                    j += coluna[current_bloco] - 1;
                     current_bloco++;
                 }
             }
@@ -349,7 +351,6 @@ std::vector<std::pair<int, int>> mais_a_cima
             return inicio_fim;
         }
     }
-
 
     return {{-1, -1}};
 
@@ -858,6 +859,9 @@ int main(){
         soma_colunas[i] = soma_vetor(colunas[i]);
     }
 
+    /// ============================== TIMER COMEÇA ================================================
+    auto start = std::chrono::steady_clock::now();
+
 
     // Matriz do nonograma
     // Cada célula contém um inteiro (-1, 0 ou 1)
@@ -868,8 +872,8 @@ int main(){
 
     std::vector<bool> linhas_completas(n_linhas);
     std::vector<bool> colunas_completas(n_colunas);
-    std::vector<std::pair<int, int>> magic_numbers_linhas(n_linhas, {1,1});
-    std::vector<std::pair<int, int>> magic_numbers_colunas(n_colunas, {1,1});
+    std::vector<std::pair<int, int>> magic_numbers_linhas(n_linhas, {0,0});
+    std::vector<std::pair<int, int>> magic_numbers_colunas(n_colunas, {0,0});
 
     // Pré-processamento: percorre as colunas e linhas, e marca os quadrados que são certos de ocorrer
 
@@ -935,6 +939,10 @@ int main(){
                 //std::cout << "Doidera 0.7 " << std::endl;
                 //std::cout << linhas_to_see.size() << std::endl;
                 to_see = linhas_to_see.front();
+
+                // |  | X |  |  |  |  |  |  |  | 3  3
+                //   X  X  0   0  0  X 0 0 0
+
                 leftmost = mais_a_esquerda(linhas[to_see], nonograma[to_see], soma_linhas[to_see], n_linhas, n_colunas, magic_numbers_linhas[to_see].first);
 
                 // Ver aqui se deu ruim
@@ -945,6 +953,8 @@ int main(){
                 }
 
                 rightmost = mais_a_direita(linhas[to_see], nonograma[to_see], soma_linhas[to_see], n_linhas, n_colunas, magic_numbers_linhas[to_see].second);
+
+
 
                 // Aplicar regra 1
                 regra_1(leftmost, rightmost, colunas_completas, in_colunas_to_see, colunas_to_see, nonograma, linhas[to_see], to_see);
@@ -1007,7 +1017,12 @@ int main(){
                 //std::cout << "Antes mais a baixo" << std::endl;
 
                 rightmost = mais_a_baixo(colunas[to_see], coluna_nonograma, soma_colunas[to_see], n_colunas, n_linhas, magic_numbers_colunas[to_see].second);
-
+                
+                // {-1, -1}
+                // if(rightmost[0].first == -1){
+                //     absurdo = true;
+                //     break;
+                // }
                 //std::cout << "Depois mais a baixo" << std::endl;
                 // for(int i{0}; i < leftmost.size(); ++i){
                 //     std::cout << "("<<leftmost[i].first<<","<<leftmost[i].second<<") ";
@@ -1019,7 +1034,9 @@ int main(){
                 // std::cout << std::endl;
 
                 // std::cout << "Antes regra 1" << std::endl;
-
+                
+                // {(0, 3), (5, 8), (10, 12)}
+                // {-1 , -1}
                 // Aplicar regra 1
                 regra_1(leftmost, rightmost, linhas_completas, in_linhas_to_see, linhas_to_see, nonograma, colunas[to_see], to_see, true);
 
@@ -1204,11 +1221,19 @@ int main(){
     }
 
 
+    auto end = std::chrono::steady_clock::now();
+    /// ============================== TIMER TERMINA ================================================
+    auto diff( end - start );
+    double elapsed_time_mean = (std::chrono::duration <double, std::milli> (diff).count());
+
+
     if(unsolvable){
         std::cout << "Sem solução :D" << std::endl;
     }
 
     PRINT_NONOGRAMA
+
+    std::cout << "\nTempo gasto: " << std::to_string(elapsed_time_mean) << "ms." << std::endl;
 
 
     // Metodo exato :D
