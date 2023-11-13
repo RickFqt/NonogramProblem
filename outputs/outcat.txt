@@ -1,0 +1,21 @@
+  OO                
+ OO                 
+ O                  
+ O                  
+ O     OOO          
+OO    OOOOO         
+O    OOOOOOO   O   O
+O    OOOOOOOO  OO OO
+O   OOOOOOOOO  OOOOO
+OO  OOOOOOOOOOOOOOOO
+ O OOOOOOOOOOOOOOOOO
+ OOOOOOO OOOOOOOOOOO
+  OOOOO   OOOOO OOO 
+  OOOOO   OOOO      
+   OOO     OOO      
+   OO      OO       
+  OO        O       
+  O         O       
+  OO        OO      
+  OO        OO      
+# Medição do tempo do teste 1: 9.990898ms.

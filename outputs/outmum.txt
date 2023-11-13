@@ -38,5 +38,4 @@ OOOOOOOOOOOOOO      OOOOOOOOOOOOOO
         OO    OOOOOO    OO        
           OOOO      OOOO          
               OOOOOO              
-
-Tempo gasto: 1379254.354650ms.
+# Medição do tempo do teste 8: 4838027.532733ms.

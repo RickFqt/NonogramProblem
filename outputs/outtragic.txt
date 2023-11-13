@@ -1,0 +1,51 @@
+     OOOOOOOOOOOOOOOOOOOOOOOOO OOO OOOOO     
+    OOOOOOOOOOOOOOOOOOOOOOOOO OOOO  OOOOO    
+  OOOOO   OOOOOOOOOOOOOOOOOOOOOOO OO   OOO   
+  OOOOOOOO  OOOOOOOOOOOOOOOOOOOOOOOOOOOO O   
+  OOO   OOOO  OOOOOOOOOOOOOOOOOOOOOOOOOOO O  
+ OOOOOOOO  OOO OOOOOOOOOOOOOOOOOOOOOOOOOOOO  
+ OOO   OOO   OOOOOOOOOOOOOOOO  OOOOOOOOOOOOO 
+ OO     OOOO  O  O  O           OOOOOOOOOOOO 
+OOO OOO  OOOOO OO  OO            OOOOOOOOOOO 
+OOO O OO OO  OOO  OOO             OOOOOOOOOO 
+OO     O OOOOOO  OOO               OOOOOOOOO 
+OO O   O O  O   OOO                 OOOOO O  
+OO OOO O OOOOOOOOO                        O  
+OO OOOOO OOOOO                           OO  
+OO  OOOO OOOO                           OO   
+OO  OOOO OOOO                           O    
+OOO  OO  OOOO        OOOOOO             O    
+OOO  OO   OO           OOOOOO          OO    
+OOO   O   O         O     OOOOO        O     
+OOO                  OO    OOOOOO      O     
+OOO                   OOO   OOOOO      O     
+OOO   O                OOOOOOOOOOOO    O     
+OOOO OO                  OO      OOOOO O     
+ OOOOO                          OOOOOOOOOOOO 
+ OOO                            OO  OOOOOOOOO
+ OOO                            OOO OOOOOOOOO
+  O                             OOOOOOOOOOOOO
+  O                             OOOOOOOOOOOOO
+ OO                OOOOOOO     OOOOO OO   OOO
+OOO             OOOOO  OO      OOO         OO
+OOOO                    O      OO           O
+OOOO             O  OOO OOOO   OO   OOOO     
+OOOOO            OOO OOO OOOOOOO       OO    
+O OOOO           O OO OOOO         OO   OO   
+   OOOO          O  OO OOO        OO     OO  
+    OOOO         OO  OOOOO OO    OOOO     O  
+O   OOOOO         OO  OO    O O     OOO   O  
+OO   OOOOO         OO OOO   OOO       OO     
+ O    OOOOO         OOOOOO                   
+ OO O OOOOOO        OO  OOO                  
+ OOOOOOOOOOOO      OO     OO                 
+ OOOOOOOOOOOOO    OO       OO                
+OOOOOOOOOOOOOOOOOOO                          
+OOOOOOOOOOOOOOOOOO                           
+OOOOOOOOOOOOOOOOOO  OO                       
+OOOOOOOOOOOOOOOOOO    OO                     
+OOOOOOO   OOOOOOOO     OOO                  O
+OOOOOOO         OOO      OO                 O
+OOOOO            OO       OOO              OO
+OOOO            OOO         OOO           OOO
+# Medição do tempo do teste 0: 16759683.160530ms.

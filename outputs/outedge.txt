@@ -1,0 +1,12 @@
+   O      
+ OOO      
+ O        
+OO        
+     O    
+   OOO    
+   OOO    
+     O    
+       OO 
+       OO 
+      OOOO
+# Medição do tempo do teste 4: 15.504397ms.

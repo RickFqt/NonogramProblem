@@ -1,0 +1,21 @@
+ O OOO  OO         O
+O OO   OO           
+OOO   OOOO          
+ OO OOO  OO         
+OO  O    OOOOOO     
+OO  OOOOOOOOOOOOO  O
+ O     O    OOOOOOOO
+ OO    O O   OOOOOOO
+  O   OO OO  OO  OOO
+OOO  O       O O OOO
+ O  OO       O O OOO
+ OO O   O        OOO
+ O  OOOOO      OOOOO
+  O    O        OOO 
+     OOOO       OO  
+ OO OO  O      OO  O
+ OO O  OO    OOO  OO
+ OOOO  O  OOOOOO  O 
+ OOO   OOOO OOO  OO 
+           OOOO OO  
+# Medição do tempo do teste 5: 232.857952ms.

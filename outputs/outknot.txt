@@ -1,0 +1,35 @@
+               O  O               
+              OO  OO              
+             OOO  OOO             
+            OO O  O OO            
+           OO  O  O  OO           
+           O   O  O   O           
+           O   O  O   O           
+        OOOOOOOOOOOOOOOOOO        
+       OO  O   O  O   O  OO       
+       O   O   O  O   O   O       
+       O   O   O  O   O   O       
+    OOOOOOOOOOOOOOOOOOOOOOOOOO    
+   OO  O   O   O  O   O   O  OO   
+  OO   O   O  OO  OO  O   O   OO  
+ OO    O   O OO    OO O   O    OO 
+OOOOOOOOOOOOOO      OOOOOOOOOOOOOO
+       O   O          O   O       
+       O   O          O   O       
+OOOOOOOOOOOOOO      OOOOOOOOOOOOOO
+ OO    O   O OO    OO O   O    OO 
+  OO   O   O  OO  OO  O   O   OO  
+   OO  O   O   O  O   O   O  OO   
+    OOOOOOOOOOOOOOOOOOOOOOOOOO    
+       O   O   O  O   O   O       
+       O   O   O  O   O   O       
+       OO  O   O  O   O  OO       
+        OOOOOOOOOOOOOOOOOO        
+           O   O  O   O           
+           O   O  O   O           
+           OO  O  O  OO           
+            OO O  O OO            
+             OOO  OOO             
+              OO  OO              
+               O  O               
+# Medição do tempo do teste 6: 43478.124996ms.
