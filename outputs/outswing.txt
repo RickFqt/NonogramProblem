@@ -43,4 +43,4 @@ OOOOOOOO   OOOO   OOOOOOOOOOOOOOOOOOOOOOO
  OO O OOOO     OO  O OOOO O OOOOO O OOO O OO 
  OO O OOOOO     OOOO OOOO O OOOOO O OOO O OO 
     O     OOOOOOOOOO      O       O     O    
-# Medição do tempo do teste 7: 367240.826764ms.
+# Medição do tempo do teste 0: 360112.712233ms com tempo minimo de 358490.043001ms e tempo máximo de364692.423540ms.

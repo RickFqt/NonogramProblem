@@ -21,4 +21,4 @@ O   O        O   O  O O O O
 O   O        O   O  O  O  O
 O   O        O   O  OO   OO
 OOOOO        OOOOO    OOO  
-# Medição do tempo do teste 3: 1072.327579ms.
+# Medição do tempo do teste 3: 1242.121109ms com tempo minimo de 1056.790251ms e tempo máximo de1810.367859ms.

@@ -23,4 +23,4 @@ OO       OO
    OO       OO
   OO       OO 
   OO       OO 
-# Medição do tempo do teste 2: 15.616797ms.
+# Medição do tempo do teste 2: 14.324842ms com tempo minimo de 13.976199ms e tempo máximo de15.903099ms.

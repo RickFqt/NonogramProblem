@@ -18,4 +18,4 @@ OO  OOOOOOOOOOOOOOOO
   O         O       
   OO        OO      
   OO        OO      
-# Medição do tempo do teste 1: 9.990898ms.
+# Medição do tempo do teste 1: 9.650136ms com tempo minimo de 9.460900ms e tempo máximo de11.159200ms.

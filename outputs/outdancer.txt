@@ -8,4 +8,4 @@ O O
  O O 
  O OO
 OO   
-# Medição do tempo do teste 0: 0.901900ms.
+# Medição do tempo do teste 0: 0.792358ms com tempo minimo de 0.755500ms e tempo máximo de0.984300ms.

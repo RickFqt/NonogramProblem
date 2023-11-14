@@ -9,4 +9,4 @@ OO
        OO 
        OO 
       OOOO
-# Medição do tempo do teste 4: 15.504397ms.
+# Medição do tempo do teste 4: 11.427050ms com tempo minimo de 2.895400ms e tempo máximo de20.803800ms.

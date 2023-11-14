@@ -18,4 +18,4 @@ OOO  O       O O OOO
  OOOO  O  OOOOOO  O 
  OOO   OOOO OOO  OO 
            OOOO OO  
-# Medição do tempo do teste 5: 232.857952ms.
+# Medição do tempo do teste 5: 132.393759ms com tempo minimo de 49.298701ms e tempo máximo de352.686609ms.

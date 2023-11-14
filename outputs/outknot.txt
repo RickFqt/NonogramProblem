@@ -32,4 +32,4 @@ OOOOOOOOOOOOOO      OOOOOOOOOOOOOO
              OOO  OOO             
               OO  OO              
                O  O               
-# Medição do tempo do teste 6: 43478.124996ms.
+# Medição do tempo do teste 0: 43612.960713ms com tempo minimo de 43200.542004ms e tempo máximo de44417.080136ms.
