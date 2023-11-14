@@ -21,25 +21,39 @@ esquerda para a direita. Como exemplo, o arquivo presente em
 Tendo acesso ao algoritmo, será necessário compilá-lo usando o g++. Para compilar o código heurístico, utilize o seguinte comando:
 
 ```
-$ g++ heuristic.cpp -o solve.out
+$ g++ heuristic/heuristic.cpp -o solve.out
+```
+Já para compilar o código do algoritmo exato, utilize
+o seguinte comando:
+
+```
+$ g++ exact/exact.cpp -o solve.out
 ```
 
 Após gerar o executável, para aplicar o algoritmo a algum caso de teste, será necessário informar o caminho para esse caso de teste como input. O seguinte comando executa o algoritmo heurístico no nonograma representado por [inputs/example.txt](https://github.com/RickFqt/NonogramProblem/blob/main/inputs/in1.txt). A solução do nonograma encontrada pelo algoritmo será salva no arquivo [out.txt](https://github.com/RickFqt/NonogramProblem/blob/main/out.txt).
 
 
 ```
-$ ./solve.out <inputs/example.txt >out.txt
+$ ./solve.out <inputs/example.txt >outputs/out.txt
 ```
 Para testar o algoritmo em outro nonograma, basta substituir "inputs/example.txt" para o caminho do arquivo de entrada desejado. 
-Ademais, caso queira comparar a solução encontrada com a solução real, as soluções de alguns dos arquivos de entrada estão disponíveis na pasta [solutions](https://github.com/RickFqt/NonogramProblem/blob/main/solutions).
+Ademais, caso queira comparar a solução encontrada com a solução real, as soluções dos arquivos de entrada estão disponíveis na pasta [solutions](https://github.com/RickFqt/NonogramProblem/blob/main/solutions).
 
 ## Medição de tempo de execução
 
-A fim de realizar o teste de tempo, pode-se utilizar os seguintes comandos:
+A fim de realizar o teste de tempo do algoritmo heurístico, pode-se utilizar o seguinte comandos:
 
 ```
-$ g++ outputTime.cpp -o time.out
+$ g++ heuristic/outputTime.cpp -o time.out
+```
 
+Já para o algoritmo exato, utilize o seguinte comando:
+```
+$ g++ exact/exactTimeTest.cpp -o time.out
+```
+
+Para executar, apenas utilize o comando:
+```
 $ ./time.out
 ```
-O resultado dos testes será salvo no arquivo [outputTime.txt](https://github.com/RickFqt/NonogramProblem/blob/main/outputTime.txt).
+O resultado dos testes do algoritmo heurístico será salvo no arquivo [outputTime.txt](https://github.com/RickFqt/NonogramProblem/blob/main/outputTime.txt). Já para o algoritmo exato, um arquivo correspondente a cada caso de teste será criado na pasta "outputs".
