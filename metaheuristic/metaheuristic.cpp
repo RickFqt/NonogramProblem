@@ -1,4 +1,6 @@
 #include <bits/stdc++.h>
+// Limite de iterações para a metaheurística. Deve ser um número múltiplo de 5
+#define LIMIT_ITERATIONS 100
 
 
 std::vector<std::vector<int>> triangulo_pascal({{1}});
@@ -378,128 +380,164 @@ int main(){
     // 0 --> Célula marcada com X
     // 1 --> Célula colorida
     std::vector<std::vector<int>> nonograma(n_linhas, std::vector<int>(n_colunas, -1));
+    int objetivo_atual = INT_MAX;
+
+    // Vetor de nonogramas encontrados durante a execução. Salva os últimos 5 nonogramas calculados, a fim de fazer o pathrelinking entre eles.
+    std::vector<std::vector<std::vector<int>>> nonogramas(5, std::vector<std::vector<int>>(n_linhas, std::vector<int>(n_colunas, -1)));
+    std::vector<int> objetivo_nonogramas(5, INT_MAX);
+
+    std::vector<std::vector<int>> nonograma_best(n_linhas, std::vector<int>(n_colunas, -1));
+    int objetivo_best = INT_MAX;
+
 
     // Pré-processamento: percorre as colunas, e marca os quadrados que são certos de ocorrer
 
-    pre_processamento(colunas, nonograma);
+
+    std::vector<std::vector<int>> nonograma_init(n_linhas, std::vector<int>(n_colunas, -1));
+    pre_processamento(colunas, nonograma_init);
+
+    // Algoritmo MetaHeurístico :D
+
+    // Enquanto não atingir critério de parada:
+    //      Construir solução inicial (aplicar heurística)
+    //      Realizar busca na vizinhança para atingir um mínimo local
+    //      Se for o caso, realizar PathRelinking com as últimas 5 soluções encontradas
+    //      Comparar o nonograma encontrado com o melhor até agora encontrado, e mudar caso necessário.
+
+    for(int current_iteration = 0; current_iteration < LIMIT_ITERATIONS; current_iteration++){
+
+        nonograma = nonograma_init;
 
 
-    // Algoritmo Heurístico :D
+        // Algoritmo Heurístico :D
 
-    // Enquanto não estiver completo:
-    //      Escolher a proxima linha
-    //      Fazer 10 construcoes para a linha corretamente sem se preocupar com as colunas
-    //      Escolher a linha construída que menos causa conflito com as colunas
+        // Enquanto não estiver completo:
+        //      Escolher a proxima linha
+        //      Fazer 100 construcoes para a linha corretamente sem se preocupar com as colunas
+        //      Escolher a linha construída que menos causa conflito com as colunas
 
-    std::vector<int> sequencia_linhas;
+        std::vector<int> sequencia_linhas;
 
-    for(int i{0}; i < n_linhas; ++i){
-        sequencia_linhas.push_back(i);
-    }
-    std::random_shuffle(sequencia_linhas.begin(), sequencia_linhas.end());
-
-    // Enquanto não estiver completo:
-    for(int k{0}; k < n_linhas; ++k){
-        // Indice da linha atual
-        int i = sequencia_linhas[k];
-        //Preencher a linha
-
-        
-        int quadrados_vazios = n_colunas - soma_linhas[i]; // Número de quadrados vazios necessários nessa linha
-        if(quadrados_vazios < 0){
-            std::cerr << "Nonograma sem solução1! Impossível preencher linha " << i << "\n";
-            return 1;
+        for(int i{0}; i < n_linhas; ++i){
+            sequencia_linhas.push_back(i);
         }
+        std::random_shuffle(sequencia_linhas.begin(), sequencia_linhas.end());
 
-        int combinao = combinacao(quadrados_vazios + 1, linhas[i].size()); // Número máximo de possíveis alocações dos blocos
-        
-        int tamanho = std::min(combinao, 100);
-        std::vector<std::vector<bool>> linhas_construidas;
+        // Enquanto não estiver completo:
+        for(int k{0}; k < n_linhas; ++k){
+            // Indice da linha atual
+            int i = sequencia_linhas[k];
+            //Preencher a linha
 
-        if(soma_linhas[i] != 0){
             
-            std::vector<int> numeros_sorteados;
-            std::vector<bool> vetor_sorteado;
-
-            for(int j{1}; j <= combinao; ++j){
-                numeros_sorteados.push_back(j);
-            }
-            std::random_shuffle(numeros_sorteados.begin(), numeros_sorteados.end());
-
-            int index_sorteado = 0;
-            //std::cout << "Combinacoes = " << combinao << std::endl;
-            for(int j{0}; j < tamanho; ++j){
-
-                int sorteado = numeros_sorteados[index_sorteado];
-
-                // Converte o número sorteado à respectiva alocação de blocos
-                vetor_sorteado = convert_number(sorteado, quadrados_vazios, linhas[i].size(), n_colunas, linhas[i]);
-
-                if(linha_valida(vetor_sorteado, nonograma[i])){
-                    linhas_construidas.push_back(vetor_sorteado);
-                }
-
-                if(j == tamanho - 1 && linhas_construidas.empty()){
-                    linhas_construidas.push_back(vetor_sorteado);
-                }
-
-                ++index_sorteado;
-
-                if(index_sorteado >= combinao){
-                    break;
-                }
-            }
-
-            if(linhas_construidas.empty()){
-                std::cerr << "Nonograma sem solução2! Impossível preencher linha " << i << "\n";
+            int quadrados_vazios = n_colunas - soma_linhas[i]; // Número de quadrados vazios necessários nessa linha
+            if(quadrados_vazios < 0){
+                std::cerr << "Nonograma sem solução1! Impossível preencher linha " << i << "\n";
                 return 1;
             }
 
+            int combinao = combinacao(quadrados_vazios + 1, linhas[i].size()); // Número máximo de possíveis alocações dos blocos
+            
+            int tamanho = std::min(combinao, 100);
+            std::vector<std::vector<bool>> linhas_construidas;
+
+            if(soma_linhas[i] != 0){
+                
+                std::vector<int> numeros_sorteados;
+                std::vector<bool> vetor_sorteado;
+
+                for(int j{1}; j <= combinao; ++j){
+                    numeros_sorteados.push_back(j);
+                }
+                std::random_shuffle(numeros_sorteados.begin(), numeros_sorteados.end());
+
+                int index_sorteado = 0;
+                //std::cout << "Combinacoes = " << combinao << std::endl;
+                for(int j{0}; j < tamanho; ++j){
+
+                    int sorteado = numeros_sorteados[index_sorteado];
+
+                    // Converte o número sorteado à respectiva alocação de blocos
+                    vetor_sorteado = convert_number(sorteado, quadrados_vazios, linhas[i].size(), n_colunas, linhas[i]);
+
+                    if(linha_valida(vetor_sorteado, nonograma[i])){
+                        linhas_construidas.push_back(vetor_sorteado);
+                    }
+
+                    if(j == tamanho - 1 && linhas_construidas.empty()){
+                        linhas_construidas.push_back(vetor_sorteado);
+                    }
+
+                    ++index_sorteado;
+
+                    if(index_sorteado >= combinao){
+                        break;
+                    }
+                }
+
+                if(linhas_construidas.empty()){
+                    std::cerr << "Nonograma sem solução2! Impossível preencher linha " << i << "\n";
+                    return 1;
+                }
 
 
-        }
-        // std::cout << "batata4" << std::endl;
 
-        std::vector<bool> linha_escolhida;
-        if(soma_linhas[i] == 0){
-            linha_escolhida = std::vector<bool>(n_colunas);
-        }
-        else{
+            }
+            // std::cout << "batata4" << std::endl;
 
-            linha_escolhida = escolher_linha(linhas_construidas, linhas, colunas, nonograma, i, k);
-
-        }
-        // Escolhe a linha com menor conflito
-
-
-
-        // Preenche o nonograma com a linha escolhida
-        for(int j{0}; j < n_colunas; ++j){
-            if(linha_escolhida[j]){
-
-                nonograma[i][j] = 1;
+            std::vector<bool> linha_escolhida;
+            if(soma_linhas[i] == 0){
+                linha_escolhida = std::vector<bool>(n_colunas);
             }
             else{
-                nonograma[i][j] = 0;
+
+                linha_escolhida = escolher_linha(linhas_construidas, linhas, colunas, nonograma, i, k);
+
             }
+            // Escolhe a linha com menor conflito
+
+
+
+            // Preenche o nonograma com a linha escolhida
+            for(int j{0}; j < n_colunas; ++j){
+                if(linha_escolhida[j]){
+
+                    nonograma[i][j] = 1;
+                }
+                else{
+                    nonograma[i][j] = 0;
+                }
+            }
+
+        }
+
+
+        // Busca na vizinhança
+
+        // ...
+
+        // Salvar o nonograma encontrado
+        nonogramas[current_iteration % 5] = nonograma;
+
+        objetivo_atual = funcao_objetivo(linhas, colunas, nonograma);
+        objetivo_nonogramas[current_iteration % 5] = objetivo_atual;
+
+
+
+        // Se current_iteration % 5 == 4, fazer o path_relinking
+
+        // ...
+
+        // Atualizar o melhor global
+
+        if(objetivo_atual < objetivo_best){
+            nonograma_best = nonograma;
+            objetivo_best = objetivo_atual;
         }
 
     }
 
-    // Print do nonograma resultante
-    for(int i{0}; i < n_linhas; ++i){
-        for(int j{0}; j < n_colunas; ++j){
-            if(nonograma[i][j] == 1){
-                std::cout << "O";
-            }
-            else{
-                std::cout << " "; 
-            }
-        }
-        std::cout << std::endl;
-    }
-
-    int objetivo_final = funcao_objetivo(linhas, colunas, nonograma);
+    int objetivo_final = funcao_objetivo(linhas, colunas, nonograma_best);
     std::cout << std::endl << "Funcao objetivo final: " << objetivo_final << std::endl;
     if(objetivo_final == 0){
         std::cout << "Solução Correta!" << std::endl;
