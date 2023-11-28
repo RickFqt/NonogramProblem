@@ -69,6 +69,7 @@ std::vector<std::vector<int>> calcula_blocos(std::vector<std::vector<int>>nonogr
     std::vector<std::vector<int>> quantidade_blocos(n_colunas);
     std::vector<int> continuidade_blocos(n_colunas);
     std::vector<int> bloco_atual(n_colunas);
+    // std::cout << "Bla" << std::endl;
 
     for(int i{0}; i < n_linhas; ++i){
 
@@ -97,6 +98,8 @@ std::vector<std::vector<int>> calcula_blocos(std::vector<std::vector<int>>nonogr
         }
     }
 
+    // std::cout << "Blu" << std::endl;
+
     return quantidade_blocos;
 
 }
@@ -109,28 +112,39 @@ int funcao_objetivo(std::vector<std::vector<int>>linhas,
                 int idx_linha_analisada,
                 int linhas_preenchidas){
     
+    if(linhas_preenchidas == linhas.size()){
+        linhas_preenchidas--;
+    }
 
     // Primeira parcela do somatorio
     int sum1 = 0;
     int sum11, sum12;
+
+    // std::cout << "Funcao Objetivo 1" << std::endl;
 
     for(int i{0}; i < colunas.size(); ++i){
         sum11 = 0; sum12 = 0;
         sum11 += soma_vetor(colunas[i]);
 
         for(int j{0}; j <= linhas_preenchidas; ++j){
+            // std::cout << "Aaaa" << std::endl;
             if(j == idx_linha_analisada){
                 if(linha_analisada[i]){
                     sum12 += 1;
                 }
             }
             else if(nonograma[j][i] != -1){
+                // std::cout << "A" << std::endl;
                 sum12 += nonograma[j][i];
+                // std::cout << "b" << std::endl;
             }
+            // std::cout << "Bbbbb" << std::endl;
         }
 
         sum1 += abs(sum11 - sum12);
     }
+
+    // std::cout << "Funcao Objetivo 2" << std::endl;
 
 
     // Segunda parcela do somatório
@@ -155,6 +169,8 @@ int funcao_objetivo(std::vector<std::vector<int>>linhas,
             sum2 += abs(c_pk - b_pk);
         }
     }
+
+    // std::cout << "Funcao Objetivo 3" << std::endl;
     return sum1 + sum2;
 }
 
@@ -178,13 +194,18 @@ int funcao_objetivo(std::vector<std::vector<int>>linhas,
 
         sum1 += abs(sum11 - sum12);
     }
+    // std::cout << "Antes calcula blocos" << std::endl;
 
     // Segunda parcela do somatório
     int sum2 = 0, c_pk, b_pk;
     std::vector<std::vector<int>> blocos_por_coluna = calcula_blocos(nonograma);
 
+    // std::cout << "Depois calcula blocos" << std::endl;
+
     for(int k{0}; k < colunas.size(); ++k){
+        // std::cout << "Fra" << std::endl;
         for(int p{0}; p < std::max(colunas[k].size(), blocos_por_coluna[k].size()); ++p){
+            // std::cout << "Fre" << std::endl;
             if(p >= colunas[k].size()){
                 c_pk = 0;
             }
@@ -192,15 +213,18 @@ int funcao_objetivo(std::vector<std::vector<int>>linhas,
                 c_pk = colunas[k][p];
             }
 
+            // std::cout << "Fri" << std::endl;
             if(p >= blocos_por_coluna[k].size()){
                 b_pk = 0;
             }
             else{
                 b_pk = blocos_por_coluna[k][p];
             }
+            // std::cout << "Fro" << std::endl;
             sum2 += abs(c_pk - b_pk);
         }
     }
+    // std::cout << "Fru" << std::endl;
     return sum1 + sum2;
 }
 
@@ -335,6 +359,8 @@ std::vector<bool> escolher_linha(std::vector<std::vector<bool>>linhas_construida
         }
     }
 
+    // std::cout << "Tamanho todo" << std::endl;
+
     return linhas_construidas[i_min];
 
 }
@@ -371,6 +397,11 @@ struct ListaTabu{
         return false;
     }
 
+    void reset(){
+        current_index = -1;
+        full = false;
+    }
+
 };
 
 void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_global,
@@ -379,7 +410,7 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
                 std::vector<int> combinacoes_linhas){
 
     int n_linhas = nonograma.size();
-    int n_colunas = linhas.size();
+    int n_colunas = nonograma[0].size();
     int tamanho_lista = floor( sqrt( (double)n_linhas ) );
     
     ListaTabu lista_tabu(tamanho_lista);
@@ -389,18 +420,23 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
     int melhor_objetivo_local;
     int current_objetivo;
 
-
+    // std::cout << "Objetivo inicial:" << melhor_objetivo_global << std::endl;
 
     for(int i{0}; i < LIMIT_LOCAL_ITERATIONS; ++i){
+
+        lista_tabu.reset();
 
 
         
         melhor_objetivo_local = INT_MAX;
+        // std::cout << "E aqui?" << std::endl;
 
         // Gerar os vizinhos e escolher o melhor
         for(int linha_atual{0}; linha_atual < n_linhas; ++linha_atual){
-
+            
             nonograma_vizinho = nonograma_inicial;
+
+            // std::cout << "Jorge" << std::endl;
 
 
             // Fazer 100 construcoes para a linha corretamente sem se preocupar com as colunas
@@ -422,7 +458,7 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
                 std::random_shuffle(numeros_sorteados.begin(), numeros_sorteados.end());
 
                 int index_sorteado = 0;
-                //std::cout << "Combinacoes = " << combinao << std::endl;
+                // std::cout << "Combinacoes = " << combinao << std::endl;
                 for(int j{0}; j < tamanho; ++j){
 
                     int sorteado = numeros_sorteados[index_sorteado];
@@ -449,18 +485,22 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
 
             }
 
-            std::vector<bool> linha_escolhida;
+            // std::cout << "Kleiton" << std::endl;
+
+            std::vector<bool> linha_escolhida(n_colunas);
             if(soma_linhas[linha_atual] == 0){
                 linha_escolhida = std::vector<bool>(n_colunas);
             }
             else{
 
+                // std::cout << "Kleiton1" << std::endl;
                 linha_escolhida = escolher_linha(linhas_construidas, linhas, colunas, nonograma, linha_atual, n_linhas);
+                // std::cout << "Kleiton2" << std::endl;
 
             }
             // Escolhe a linha com menor conflito
 
-
+            // std::cout << "Alguem" << std::endl;
 
             // Preenche o nonograma com a linha escolhida
             for(int j{0}; j < n_colunas; ++j){
@@ -474,7 +514,7 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
             }
 
 
-
+            // std::cout << "Batata" << std::endl;
 
             // GEREI O VIZINHO!!! Agora, vejo se ele é tabu e se é melhor que o melhor
             current_objetivo = funcao_objetivo(linhas, colunas, nonograma_vizinho);
@@ -487,6 +527,8 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
                 melhor_objetivo_local = current_objetivo;
             }
 
+            // std::cout << "Tomate" << std::endl;
+
 
             if(melhor_objetivo_local < melhor_objetivo_global){
                 lista_tabu.insert(linha_atual);
@@ -494,16 +536,20 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
                 nonograma = nonograma_vizinho;
             }
 
+            // std::cout << "Lallala" << std::endl;
+
 
         }
 
-
+        // std::cout << "Não?" << std::endl;
 
 
         if(melhor_objetivo_global == 0){
             break;
         }
     }
+
+    // std::cout << "Objetivo final:" << melhor_objetivo_global << std::endl;
 
 
 
@@ -689,7 +735,9 @@ int main(){
 
         // Busca na vizinhança
 
+        // std::cout << "O erro foi aqui?" << std::endl;
         busca_tabu(nonograma, objetivo_atual, linhas, soma_linhas, colunas, soma_colunas, combinacoes_linhas);
+        // std::cout << "Sim" << std::endl;
 
         // Salvar o nonograma encontrado
         nonogramas[current_iteration % 5] = nonograma;
@@ -714,6 +762,19 @@ int main(){
             break;
         }
 
+    }
+
+    // Print do nonograma resultante
+    for(int i{0}; i < n_linhas; ++i){
+        for(int j{0}; j < n_colunas; ++j){
+            if(nonograma[i][j] == 1){
+                std::cout << "O";
+            }
+            else{
+                std::cout << " "; 
+            }
+        }
+        std::cout << std::endl;
     }
 
     int objetivo_final = funcao_objetivo(linhas, colunas, nonograma_best);
