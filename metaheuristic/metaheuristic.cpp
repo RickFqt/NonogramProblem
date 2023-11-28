@@ -1,6 +1,8 @@
 #include <bits/stdc++.h>
 // Limite de iterações para a metaheurística. Deve ser um número múltiplo de 5
 #define LIMIT_ITERATIONS 100
+// Limite de iterações para a busca local na vizinhanca (busca tabu);
+#define LIMIT_LOCAL_ITERATIONS 100
 
 
 std::vector<std::vector<int>> triangulo_pascal({{1}});
@@ -337,6 +339,175 @@ std::vector<bool> escolher_linha(std::vector<std::vector<bool>>linhas_construida
 
 }
 
+struct ListaTabu{
+    int tamanho_lista;
+    int current_index;
+    bool full;
+    std::vector<int> storage;
+
+    ListaTabu(int tamanho){
+        tamanho_lista = tamanho;
+        current_index = -1;
+        full = false;
+        storage = std::vector<int>(tamanho);
+    }
+
+    void insert(int item){
+        if(current_index == tamanho_lista - 1){
+            full = true;
+        }
+
+        current_index = (current_index + 1) % tamanho_lista;
+        storage[current_index] = item;
+    }
+
+    bool isTabu(int item){
+        int last_pos = full ? tamanho_lista : current_index + 1;
+        for(int i{0}; i < last_pos; ++i){
+            if(storage[i] == item){
+                return true;
+            }
+        }
+        return false;
+    }
+
+};
+
+void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_global,
+                std::vector<std::vector<int>>linhas, std::vector<int> soma_linhas,
+                std::vector<std::vector<int>>colunas, std::vector<int> soma_colunas,
+                std::vector<int> combinacoes_linhas){
+
+    int n_linhas = nonograma.size();
+    int n_colunas = linhas.size();
+    int tamanho_lista = floor( sqrt( (double)n_linhas ) );
+    
+    ListaTabu lista_tabu(tamanho_lista);
+
+    std::vector<std::vector<int>> nonograma_inicial = nonograma;
+    std::vector<std::vector<int>> nonograma_vizinho;
+    int melhor_objetivo_local;
+    int current_objetivo;
+
+
+
+    for(int i{0}; i < LIMIT_LOCAL_ITERATIONS; ++i){
+
+
+        
+        melhor_objetivo_local = INT_MAX;
+
+        // Gerar os vizinhos e escolher o melhor
+        for(int linha_atual{0}; linha_atual < n_linhas; ++linha_atual){
+
+            nonograma_vizinho = nonograma_inicial;
+
+
+            // Fazer 100 construcoes para a linha corretamente sem se preocupar com as colunas
+
+            // Escolher a linha construída que menos causa conflito com as colunas
+            int quadrados_vazios = n_colunas - soma_linhas[linha_atual]; // Número de quadrados vazios necessários nessa linha
+            int combinao = combinacoes_linhas[linha_atual];
+            int tamanho = std::min(combinao, 100);
+            std::vector<std::vector<bool>> linhas_construidas;
+
+            if(soma_linhas[linha_atual] != 0){
+                
+                std::vector<int> numeros_sorteados;
+                std::vector<bool> vetor_sorteado;
+
+                for(int j{1}; j <= combinao; ++j){
+                    numeros_sorteados.push_back(j);
+                }
+                std::random_shuffle(numeros_sorteados.begin(), numeros_sorteados.end());
+
+                int index_sorteado = 0;
+                //std::cout << "Combinacoes = " << combinao << std::endl;
+                for(int j{0}; j < tamanho; ++j){
+
+                    int sorteado = numeros_sorteados[index_sorteado];
+
+                    // Converte o número sorteado à respectiva alocação de blocos
+                    vetor_sorteado = convert_number(sorteado, quadrados_vazios, linhas[linha_atual].size(), n_colunas, linhas[linha_atual]);
+
+                    if(linha_valida(vetor_sorteado, nonograma[linha_atual])){
+                        linhas_construidas.push_back(vetor_sorteado);
+                    }
+
+                    if(j == tamanho - 1 && linhas_construidas.empty()){
+                        linhas_construidas.push_back(vetor_sorteado);
+                    }
+
+                    ++index_sorteado;
+
+                    if(index_sorteado >= combinao){
+                        break;
+                    }
+                }
+
+
+
+            }
+
+            std::vector<bool> linha_escolhida;
+            if(soma_linhas[linha_atual] == 0){
+                linha_escolhida = std::vector<bool>(n_colunas);
+            }
+            else{
+
+                linha_escolhida = escolher_linha(linhas_construidas, linhas, colunas, nonograma, linha_atual, n_linhas);
+
+            }
+            // Escolhe a linha com menor conflito
+
+
+
+            // Preenche o nonograma com a linha escolhida
+            for(int j{0}; j < n_colunas; ++j){
+                if(linha_escolhida[j]){
+
+                    nonograma_vizinho[linha_atual][j] = 1;
+                }
+                else{
+                    nonograma_vizinho[linha_atual][j] = 0;
+                }
+            }
+
+
+
+
+            // GEREI O VIZINHO!!! Agora, vejo se ele é tabu e se é melhor que o melhor
+            current_objetivo = funcao_objetivo(linhas, colunas, nonograma_vizinho);
+
+            // Se o melhor da vizinhanca
+            if( lista_tabu.isTabu(linha_atual) && current_objetivo < melhor_objetivo_global ){
+                melhor_objetivo_local = current_objetivo;
+            }
+            else if(current_objetivo < melhor_objetivo_local){
+                melhor_objetivo_local = current_objetivo;
+            }
+
+
+            if(melhor_objetivo_local < melhor_objetivo_global){
+                lista_tabu.insert(linha_atual);
+                melhor_objetivo_global = current_objetivo;
+                nonograma = nonograma_vizinho;
+            }
+
+
+        }
+
+
+
+
+        if(melhor_objetivo_global == 0){
+            break;
+        }
+    }
+
+
+
+}
 
 
 int main(){
@@ -389,6 +560,9 @@ int main(){
     std::vector<std::vector<int>> nonograma_best(n_linhas, std::vector<int>(n_colunas, -1));
     int objetivo_best = INT_MAX;
 
+    // Vetor para armazenar o numero de combinacoes maximo de cada linha
+    std::vector<int> combinacoes_linhas(n_linhas);
+
 
     // Pré-processamento: percorre as colunas, e marca os quadrados que são certos de ocorrer
 
@@ -437,6 +611,7 @@ int main(){
             }
 
             int combinao = combinacao(quadrados_vazios + 1, linhas[i].size()); // Número máximo de possíveis alocações dos blocos
+            combinacoes_linhas[i] = combinao;
             
             int tamanho = std::min(combinao, 100);
             std::vector<std::vector<bool>> linhas_construidas;
@@ -514,7 +689,7 @@ int main(){
 
         // Busca na vizinhança
 
-        // ...
+        busca_tabu(nonograma, objetivo_atual, linhas, soma_linhas, colunas, soma_colunas, combinacoes_linhas);
 
         // Salvar o nonograma encontrado
         nonogramas[current_iteration % 5] = nonograma;
@@ -533,6 +708,10 @@ int main(){
         if(objetivo_atual < objetivo_best){
             nonograma_best = nonograma;
             objetivo_best = objetivo_atual;
+        }
+
+        if(objetivo_best == 0){
+            break;
         }
 
     }
