@@ -600,6 +600,11 @@ std::vector<std::vector<int>> path_relinking_dois_a_dois(std::vector<std::vector
     std::vector<std::pair<int, int>> pos_blocos2;
     
 
+    // std::cout << "\nNonograma1:" << std::endl;
+    // for(int i{0}; i < nonograma1.size(); ++i){for(int j{0}; j < nonograma1[0].size(); ++j){if(nonograma1[i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
+    // std::cout << "---------------\nNonograma2:" << std::endl;
+    // for(int i{0}; i < nonograma2.size(); ++i){for(int j{0}; j < nonograma2[0].size(); ++j){if(nonograma2[i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
+    // std::cout << "---------------" << std::endl;
     for(int i{0}; i < n_linhas; ++i){
 
         int n_blocos = linhas[i].size();
@@ -611,11 +616,6 @@ std::vector<std::vector<int>> path_relinking_dois_a_dois(std::vector<std::vector
             continue;
         }
 
-        // std::cout << "\nNonograma1:" << std::endl;
-        // for(int i{0}; i < nonograma1.size(); ++i){for(int j{0}; j < nonograma1[0].size(); ++j){if(nonograma1[i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
-        // std::cout << "---------------\nNonograma2:" << std::endl;
-        // for(int i{0}; i < nonograma2.size(); ++i){for(int j{0}; j < nonograma2[0].size(); ++j){if(nonograma2[i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
-        // std::cout << "---------------" << std::endl;
         // Copia os blocos da i-esima linha de nonograma2 para nonograma_relink, um por um, e calcula a funcao objetivo em cada passo
         for(int bloco_atual{0}; bloco_atual < n_blocos; ++bloco_atual){
 
@@ -657,11 +657,16 @@ std::vector<std::vector<int>> path_relinking_dois_a_dois(std::vector<std::vector
 
             bloco_atual += blocos_a_mudar - 1;
 
+            // std::cout << "\nNonograma relink:" << std::endl;
+            // for(int i{0}; i < nonograma_relink.size(); ++i){for(int j{0}; j < nonograma_relink[0].size(); ++j){if(nonograma_relink[i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
+            // std::cout << "---------------" << std::endl;
+
             // std::cout << "Cabra" << std::endl;
             // Calcula a funcao objetivo apos a copia do(s) bloco(s)
             objetivo_relink = funcao_objetivo(linhas, colunas, nonograma_relink);
 
             if(objetivo_relink < objetivo_resultante){
+                // std::cout << "melhorou!" << std::endl;
                 objetivo_resultante = objetivo_relink;
                 nonograma_resultante = nonograma_relink;
             }
@@ -678,6 +683,33 @@ std::vector<std::vector<int>> path_relinking(std::vector<std::vector<std::vector
     
     std::vector<std::vector<int>> nonograma_result;
 
+    std::vector<std::vector<std::vector<int>>> nonogramas_to_be_chosen = nonogramas;
+    std::vector<std::pair<int, int>> objetivo_and_idx;
+
+    for(int i{0}; i < nonogramas.size(); ++i){
+        objetivo_and_idx.push_back({objetivo_nonogramas[i], i});
+    }
+
+    int idx1, idx2;
+    for(int i{0}; i < nonogramas.size() - 1; ++i){
+        int dif_min = INT_MAX;
+        std::sort(objetivo_and_idx.begin(), objetivo_and_idx.end());
+
+        for(int j{0}; j < nonogramas.size() - 1 - i; ++j){
+            if(abs(objetivo_and_idx[j].first - objetivo_and_idx[j+1].first) < dif_min){
+                dif_min = abs(objetivo_and_idx[j].first - objetivo_and_idx[j+1].first);
+                idx1 = objetivo_and_idx[j].second;
+                idx2 = objetivo_and_idx[j+1].second;
+            }
+        }
+
+        nonograma_result = path_relinking_dois_a_dois(nonogramas_to_be_chosen[idx2], nonogramas_to_be_chosen[idx1], objetivo_nonogramas[idx1], linhas, colunas);
+        nonogramas_to_be_chosen.push_back(nonograma_result);
+        objetivo_and_idx[idx1].first = INT_MAX;
+        objetivo_and_idx[idx2].first = INT_MAX;
+        objetivo_and_idx.push_back({funcao_objetivo(linhas, colunas, nonograma_result) ,nonogramas_to_be_chosen.size() - 1});
+
+    }
     // for(int p{0}; p < nonogramas.size(); ++p){
     //     std::cout << "Nonograma "<< p << ": " << std::endl;
     //     for(int i{0}; i < nonogramas[p].size(); ++i){for(int j{0}; j < nonogramas[p][0].size(); ++j){if(nonogramas[p][i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
