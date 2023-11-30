@@ -104,6 +104,36 @@ std::vector<std::vector<int>> calcula_blocos(std::vector<std::vector<int>>nonogr
 
 }
 
+std::vector<std::pair<int, int>> calcula_pos_blocos_linha(std::vector<std::vector<int>>const & nonograma, int const &  idx_linha){
+
+    std::vector<std::pair<int, int>> pos_blocos_linha;
+    int n_colunas = nonograma[0].size();
+    bool continuidade = false;
+    int idx_bloco = -1;
+    for(int i{0}; i < n_colunas; ++i){
+
+        if(nonograma[idx_linha][i] == 1){
+
+            if(!continuidade){
+                
+                // std::cout << "alface" << std::endl;
+                continuidade = true;
+                ++idx_bloco;
+                pos_blocos_linha.push_back({i, i});
+            }
+            else{
+                pos_blocos_linha[idx_bloco].second++;
+            }
+        }
+        else{
+            // std::cout << "tomate" << std::endl;
+            continuidade = false;
+        }
+    }
+
+    return pos_blocos_linha;
+}
+
 // Funcao objetivo calculada durante o algoritmo
 int funcao_objetivo(std::vector<std::vector<int>>linhas,
                 std::vector<std::vector<int>>colunas,
@@ -555,6 +585,114 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
 
 }
 
+std::vector<std::vector<int>> path_relinking_dois_a_dois(std::vector<std::vector<int>>const & nonograma1,
+                                                         std::vector<std::vector<int>>const & nonograma2, int objetivo_nonograma2,
+                                                         std::vector<std::vector<int>>const & linhas, std::vector<std::vector<int>>const & colunas){
+    
+    std::vector<std::vector<int>> nonograma_relink = nonograma1;
+    int objetivo_relink;
+    std::vector<std::vector<int>> nonograma_resultante = nonograma2;
+    int objetivo_resultante = objetivo_nonograma2;
+    int n_linhas = nonograma1.size();
+    int n_colunas = nonograma1[0].size();
+
+    std::vector<std::pair<int, int>> pos_blocos1;
+    std::vector<std::pair<int, int>> pos_blocos2;
+    
+
+    for(int i{0}; i < n_linhas; ++i){
+
+        int n_blocos = linhas[i].size();
+        pos_blocos1 = calcula_pos_blocos_linha(nonograma1, i);
+        pos_blocos2 = calcula_pos_blocos_linha(nonograma2, i);
+
+        if(pos_blocos1.size() == 0){
+            // std::cout << "ignorame------------------" << std::endl;
+            continue;
+        }
+
+        // std::cout << "\nNonograma1:" << std::endl;
+        // for(int i{0}; i < nonograma1.size(); ++i){for(int j{0}; j < nonograma1[0].size(); ++j){if(nonograma1[i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
+        // std::cout << "---------------\nNonograma2:" << std::endl;
+        // for(int i{0}; i < nonograma2.size(); ++i){for(int j{0}; j < nonograma2[0].size(); ++j){if(nonograma2[i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
+        // std::cout << "---------------" << std::endl;
+        // Copia os blocos da i-esima linha de nonograma2 para nonograma_relink, um por um, e calcula a funcao objetivo em cada passo
+        for(int bloco_atual{0}; bloco_atual < n_blocos; ++bloco_atual){
+
+            // std::cout << "abacate" << std::endl;
+            // std::cout << "n_blocos: "<< n_blocos << std::endl;
+            // std::cout << "pos_blocos1 size: "<< pos_blocos1.size() << std::endl;
+            // std::cout << "pos_blocos2 size: "<< pos_blocos2.size() << std::endl;
+            int blocos_a_mudar = 1;
+            while(pos_blocos1[bloco_atual + blocos_a_mudar - 1].second < pos_blocos2[bloco_atual + blocos_a_mudar - 1].second){
+                
+                // std::cout << "soma lá: "<< bloco_atual + blocos_a_mudar << std::endl;
+                if(bloco_atual + blocos_a_mudar >= n_blocos){
+                    break;
+                }
+                else if(pos_blocos1[bloco_atual + blocos_a_mudar].first > pos_blocos2[bloco_atual + blocos_a_mudar - 1].second + 1){
+                    break;
+                }
+                else{
+                    blocos_a_mudar++;
+                }
+
+                // std::cout << "soma lá: "<< bloco_atual + blocos_a_mudar << std::endl;
+            }
+
+            // std::cout << "beterraba" << std::endl;
+            // Apaga os blocos anteriores em nonograma_relink
+            for(int j{0}; j < blocos_a_mudar; ++j){
+                for(int k{pos_blocos1[bloco_atual+j].first}; k <= pos_blocos1[bloco_atual+j].second; ++k){
+                    nonograma_relink[i][k] = 0;
+                }
+            }
+
+            // Copia os blocos escolhidos para nonograma_relink
+            for(int j{0}; j < blocos_a_mudar; ++j){
+                for(int k{pos_blocos2[bloco_atual+j].first}; k <= pos_blocos2[bloco_atual+j].second; ++k){
+                    nonograma_relink[i][k] = 1;
+                }
+            }
+
+            bloco_atual += blocos_a_mudar - 1;
+
+            // std::cout << "Cabra" << std::endl;
+            // Calcula a funcao objetivo apos a copia do(s) bloco(s)
+            objetivo_relink = funcao_objetivo(linhas, colunas, nonograma_relink);
+
+            if(objetivo_relink < objetivo_resultante){
+                objetivo_resultante = objetivo_relink;
+                nonograma_resultante = nonograma_relink;
+            }
+
+        }
+    }
+
+    return nonograma_resultante;
+}
+
+std::vector<std::vector<int>> path_relinking(std::vector<std::vector<std::vector<int>>>& nonogramas, std::vector<int>objetivo_nonogramas,
+                                             std::vector<std::vector<int>>linhas, std::vector<int> soma_linhas,
+                                             std::vector<std::vector<int>>colunas, std::vector<int> soma_colunas){
+    
+    std::vector<std::vector<int>> nonograma_result;
+
+    // for(int p{0}; p < nonogramas.size(); ++p){
+    //     std::cout << "Nonograma "<< p << ": " << std::endl;
+    //     for(int i{0}; i < nonogramas[p].size(); ++i){for(int j{0}; j < nonogramas[p][0].size(); ++j){if(nonogramas[p][i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
+    //     std::cout << "---------------" << std::endl;
+    // }
+
+    // Fazer path relinking dois a dois até ter só um restante
+    // while(true){
+    //     //
+    //     nonograma_result = 
+    // }
+    nonograma_result = path_relinking_dois_a_dois(nonogramas[0], nonogramas[1], objetivo_nonogramas[1], linhas, colunas);
+
+    return nonograma_result;
+}
 
 int main(){
     std::srand ( unsigned ( std::time(0) ) );
@@ -749,7 +887,9 @@ int main(){
 
         // Se current_iteration % 5 == 4, fazer o path_relinking
 
-        // ...
+        if(current_iteration % 5 == 4){
+            nonograma = path_relinking(nonogramas, objetivo_nonogramas, linhas, soma_linhas, colunas, soma_colunas);
+        }
 
         // Atualizar o melhor global
 
