@@ -70,7 +70,6 @@ std::vector<std::vector<int>> calcula_blocos(std::vector<std::vector<int>>nonogr
     std::vector<std::vector<int>> quantidade_blocos(n_colunas);
     std::vector<int> continuidade_blocos(n_colunas);
     std::vector<int> bloco_atual(n_colunas);
-    // std::cout << "Bla" << std::endl;
 
     for(int i{0}; i < n_linhas; ++i){
 
@@ -99,7 +98,6 @@ std::vector<std::vector<int>> calcula_blocos(std::vector<std::vector<int>>nonogr
         }
     }
 
-    // std::cout << "Blu" << std::endl;
 
     return quantidade_blocos;
 
@@ -117,7 +115,6 @@ std::vector<std::pair<int, int>> calcula_pos_blocos_linha(std::vector<std::vecto
 
             if(!continuidade){
                 
-                // std::cout << "alface" << std::endl;
                 continuidade = true;
                 ++idx_bloco;
                 pos_blocos_linha.push_back({i, i});
@@ -127,7 +124,6 @@ std::vector<std::pair<int, int>> calcula_pos_blocos_linha(std::vector<std::vecto
             }
         }
         else{
-            // std::cout << "tomate" << std::endl;
             continuidade = false;
         }
     }
@@ -151,31 +147,25 @@ int funcao_objetivo(std::vector<std::vector<int>>linhas,
     int sum1 = 0;
     int sum11, sum12;
 
-    // std::cout << "Funcao Objetivo 1" << std::endl;
 
     for(int i{0}; i < colunas.size(); ++i){
         sum11 = 0; sum12 = 0;
         sum11 += soma_vetor(colunas[i]);
 
         for(int j{0}; j <= linhas_preenchidas; ++j){
-            // std::cout << "Aaaa" << std::endl;
             if(j == idx_linha_analisada){
                 if(linha_analisada[i]){
                     sum12 += 1;
                 }
             }
             else if(nonograma[j][i] != -1){
-                // std::cout << "A" << std::endl;
                 sum12 += nonograma[j][i];
-                // std::cout << "b" << std::endl;
             }
-            // std::cout << "Bbbbb" << std::endl;
         }
 
         sum1 += abs(sum11 - sum12);
     }
 
-    // std::cout << "Funcao Objetivo 2" << std::endl;
 
 
     // Segunda parcela do somatório
@@ -201,7 +191,6 @@ int funcao_objetivo(std::vector<std::vector<int>>linhas,
         }
     }
 
-    // std::cout << "Funcao Objetivo 3" << std::endl;
     return sum1 + sum2;
 }
 
@@ -225,18 +214,14 @@ int funcao_objetivo(std::vector<std::vector<int>>linhas,
 
         sum1 += abs(sum11 - sum12);
     }
-    // std::cout << "Antes calcula blocos" << std::endl;
 
     // Segunda parcela do somatório
     int sum2 = 0, c_pk, b_pk;
     std::vector<std::vector<int>> blocos_por_coluna = calcula_blocos(nonograma);
 
-    // std::cout << "Depois calcula blocos" << std::endl;
 
     for(int k{0}; k < colunas.size(); ++k){
-        // std::cout << "Fra" << std::endl;
         for(int p{0}; p < std::max(colunas[k].size(), blocos_por_coluna[k].size()); ++p){
-            // std::cout << "Fre" << std::endl;
             if(p >= colunas[k].size()){
                 c_pk = 0;
             }
@@ -244,18 +229,15 @@ int funcao_objetivo(std::vector<std::vector<int>>linhas,
                 c_pk = colunas[k][p];
             }
 
-            // std::cout << "Fri" << std::endl;
             if(p >= blocos_por_coluna[k].size()){
                 b_pk = 0;
             }
             else{
                 b_pk = blocos_por_coluna[k][p];
             }
-            // std::cout << "Fro" << std::endl;
             sum2 += abs(c_pk - b_pk);
         }
     }
-    // std::cout << "Fru" << std::endl;
     return sum1 + sum2;
 }
 
@@ -402,7 +384,6 @@ std::vector<bool> escolher_linha(std::vector<std::vector<bool>>linhas_construida
         }
     }
 
-    // std::cout << "Tamanho todo" << std::endl;
 
     return linhas_construidas[i_min];
 
@@ -465,7 +446,6 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
     int melhor_objetivo_local;
     int current_objetivo;
 
-    // std::cout << "Objetivo inicial:" << melhor_objetivo_global << std::endl;
 
     for(int i{0}; i < LIMIT_LOCAL_ITERATIONS; ++i){
 
@@ -473,18 +453,12 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
         melhor_objetivo_local = INT_MAX;
 
 
-        
-        // std::cout << "E aqui?" << std::endl;
 
         // Gerar os vizinhos e escolher o melhor
         
-        // std::cout << "Melhor global gerado: " << melhor_objetivo_global << std::endl;
         for(int linha_atual{0}; linha_atual < n_linhas; ++linha_atual){
             
             nonograma_vizinho = nonograma_inicial;
-
-            // std::cout << "Jorge" << std::endl;
-
 
             // Fazer 100 construcoes para a linha corretamente sem se preocupar com as colunas
 
@@ -505,7 +479,6 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
                 std::random_shuffle(numeros_sorteados.begin(), numeros_sorteados.end());
 
                 int index_sorteado = 0;
-                // std::cout << "Combinacoes = " << combinao << std::endl;
                 for(int j{0}; j < tamanho; ++j){
 
                     int sorteado = numeros_sorteados[index_sorteado];
@@ -535,7 +508,6 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
 
             }
 
-            // std::cout << "Kleiton" << std::endl;
 
             std::vector<bool> linha_escolhida(n_colunas);
             if(soma_linhas[linha_atual] == 0){
@@ -543,14 +515,11 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
             }
             else{
 
-                // std::cout << "Kleiton1" << std::endl;
                 linha_escolhida = escolher_linha(linhas_construidas, linhas, colunas, nonograma, linha_atual, n_linhas);
-                // std::cout << "Kleiton2" << std::endl;
 
             }
             // Escolhe a linha com menor conflito
 
-            // std::cout << "Alguem" << std::endl;
 
             // Preenche o nonograma com a linha escolhida
             for(int j{0}; j < n_colunas; ++j){
@@ -564,11 +533,9 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
             }
 
 
-            // std::cout << "Batata" << std::endl;
 
             // GEREI O VIZINHO!!! Agora, vejo se ele é tabu e se é melhor que o melhor
             current_objetivo = funcao_objetivo(linhas, colunas, nonograma_vizinho);
-            // std::cout << "Objetivo gerado: " << current_objetivo << std::endl;
 
             // Se o melhor da vizinhanca
             if( lista_tabu.isTabu(linha_atual) && current_objetivo < melhor_objetivo_global ){
@@ -585,13 +552,6 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
                 best_linha_vizinho = linha_atual;
             }
 
-            // std::cout << "Tomate" << std::endl;
-
-
-            
-
-            // std::cout << "Lallala" << std::endl;
-
 
         }
 
@@ -601,9 +561,6 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
             nonograma = melhor_nonograma_local;
         }
 
-        // std::cout << "Objetivo escolhido: " << melhor_objetivo_local << std::endl;
-
-        // std::cout << "Não?" << std::endl;
 
         nonograma_inicial = melhor_nonograma_local;
 
@@ -613,7 +570,6 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
         }
     }
 
-    // std::cout << "Objetivo final:" << melhor_objetivo_global << std::endl;
 
 
 
@@ -633,12 +589,6 @@ std::vector<std::vector<int>> path_relinking_dois_a_dois(std::vector<std::vector
     std::vector<std::pair<int, int>> pos_blocos1;
     std::vector<std::pair<int, int>> pos_blocos2;
     
-
-    // std::cout << "\nNonograma1:" << std::endl;
-    // for(int i{0}; i < nonograma1.size(); ++i){for(int j{0}; j < nonograma1[0].size(); ++j){if(nonograma1[i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
-    // std::cout << "---------------\nNonograma2:" << std::endl;
-    // for(int i{0}; i < nonograma2.size(); ++i){for(int j{0}; j < nonograma2[0].size(); ++j){if(nonograma2[i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
-    // std::cout << "---------------" << std::endl;
     for(int i{0}; i < n_linhas; ++i){
 
         int n_blocos = linhas[i].size();
@@ -646,21 +596,15 @@ std::vector<std::vector<int>> path_relinking_dois_a_dois(std::vector<std::vector
         pos_blocos2 = calcula_pos_blocos_linha(nonograma2, i);
 
         if(pos_blocos1.size() == 0){
-            // std::cout << "ignorame------------------" << std::endl;
             continue;
         }
 
         // Copia os blocos da i-esima linha de nonograma2 para nonograma_relink, um por um, e calcula a funcao objetivo em cada passo
         for(int bloco_atual{0}; bloco_atual < n_blocos; ++bloco_atual){
 
-            // std::cout << "abacate" << std::endl;
-            // std::cout << "n_blocos: "<< n_blocos << std::endl;
-            // std::cout << "pos_blocos1 size: "<< pos_blocos1.size() << std::endl;
-            // std::cout << "pos_blocos2 size: "<< pos_blocos2.size() << std::endl;
             int blocos_a_mudar = 1;
             while(pos_blocos1[bloco_atual + blocos_a_mudar - 1].second < pos_blocos2[bloco_atual + blocos_a_mudar - 1].second){
                 
-                // std::cout << "soma lá: "<< bloco_atual + blocos_a_mudar << std::endl;
                 if(bloco_atual + blocos_a_mudar >= n_blocos){
                     break;
                 }
@@ -671,10 +615,8 @@ std::vector<std::vector<int>> path_relinking_dois_a_dois(std::vector<std::vector
                     blocos_a_mudar++;
                 }
 
-                // std::cout << "soma lá: "<< bloco_atual + blocos_a_mudar << std::endl;
             }
 
-            // std::cout << "beterraba" << std::endl;
             // Apaga os blocos anteriores em nonograma_relink
             for(int j{0}; j < blocos_a_mudar; ++j){
                 for(int k{pos_blocos1[bloco_atual+j].first}; k <= pos_blocos1[bloco_atual+j].second; ++k){
@@ -691,16 +633,11 @@ std::vector<std::vector<int>> path_relinking_dois_a_dois(std::vector<std::vector
 
             bloco_atual += blocos_a_mudar - 1;
 
-            // std::cout << "\nNonograma relink:" << std::endl;
-            // for(int i{0}; i < nonograma_relink.size(); ++i){for(int j{0}; j < nonograma_relink[0].size(); ++j){if(nonograma_relink[i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
-            // std::cout << "---------------" << std::endl;
 
-            // std::cout << "Cabra" << std::endl;
             // Calcula a funcao objetivo apos a copia do(s) bloco(s)
             objetivo_relink = funcao_objetivo(linhas, colunas, nonograma_relink);
 
             if(objetivo_relink < objetivo_resultante){
-                // std::cout << "melhorou!" << std::endl;
                 objetivo_resultante = objetivo_relink;
                 nonograma_resultante = nonograma_relink;
             }
@@ -724,14 +661,9 @@ std::vector<std::vector<int>> path_relinking(std::vector<std::vector<std::vector
         objetivo_and_idx.push_back({objetivo_nonogramas[i], i});
     }
 
-    // std::cout << "Objetivos iniciais: ";
-    // for(int i{0}; i < nonogramas.size(); ++i){
-    //     std::cout << objetivo_and_idx[i].first << " ";
-    // }
-    // std::cout << "\n";
-
     int idx1, idx2;
     int c1, c2;
+    // Fazer path relinking dois a dois até ter só um restante
     for(int i{0}; i < nonogramas.size() - 1; ++i){
         int dif_min = INT_MAX;
         std::sort(objetivo_and_idx.begin(), objetivo_and_idx.end());
@@ -749,7 +681,7 @@ std::vector<std::vector<int>> path_relinking(std::vector<std::vector<std::vector
 
         nonograma_result = path_relinking_dois_a_dois(nonogramas_to_be_chosen[idx2], nonogramas_to_be_chosen[idx1], objetivo_nonogramas[idx1], linhas, colunas);
         nonogramas_to_be_chosen.push_back(nonograma_result);
-        // std::cout << "Objetivo resultante entre "<< objetivo_and_idx[c1].first << " e "<<  objetivo_and_idx[c2].first << ": " << funcao_objetivo(linhas, colunas, nonograma_result) << std::endl; 
+
         objetivo_and_idx[c1].first = INT_MAX;
         objetivo_and_idx[c2].first = INT_MAX;
         objetivo_and_idx.push_back({funcao_objetivo(linhas, colunas, nonograma_result) ,nonogramas_to_be_chosen.size() - 1});
@@ -758,18 +690,9 @@ std::vector<std::vector<int>> path_relinking(std::vector<std::vector<std::vector
 
 
     }
-    // for(int p{0}; p < nonogramas.size(); ++p){
-    //     std::cout << "Nonograma "<< p << ": " << std::endl;
-    //     for(int i{0}; i < nonogramas[p].size(); ++i){for(int j{0}; j < nonogramas[p][0].size(); ++j){if(nonogramas[p][i][j] == 1){std::cout << "O";}/*else if(nonograma[i][j] == 0){std::cout << "X";}*/else{std::cout << " ";}}std::cout << std::endl;}
-    //     std::cout << "---------------" << std::endl;
-    // }
 
-    // Fazer path relinking dois a dois até ter só um restante
-    // while(true){
-    //     //
-    //     nonograma_result = 
-    // }
-    // nonograma_result = path_relinking_dois_a_dois(nonogramas[0], nonogramas[1], objetivo_nonogramas[1], linhas, colunas);
+    
+
 
     return nonograma_result;
 }
@@ -891,7 +814,6 @@ int main(){
                 std::random_shuffle(numeros_sorteados.begin(), numeros_sorteados.end());
 
                 int index_sorteado = 0;
-                //std::cout << "Combinacoes = " << combinao << std::endl;
                 for(int j{0}; j < tamanho; ++j){
 
                     int sorteado = numeros_sorteados[index_sorteado];
@@ -922,7 +844,6 @@ int main(){
 
 
             }
-            // std::cout << "batata4" << std::endl;
 
             std::vector<bool> linha_escolhida;
             if(soma_linhas[i] == 0){
@@ -954,9 +875,7 @@ int main(){
         // Busca na vizinhança
         objetivo_atual = funcao_objetivo(linhas, colunas, nonograma);
 
-        // std::cout << "O erro foi aqui?" << std::endl;
         busca_tabu(nonograma, objetivo_atual, linhas, soma_linhas, colunas, soma_colunas, combinacoes_linhas);
-        // std::cout << "Sim" << std::endl;
 
         // Salvar o nonograma encontrado
         nonogramas[current_iteration % 5] = nonograma;
