@@ -1,8 +1,9 @@
 #include <bits/stdc++.h>
 // Limite de iterações para a metaheurística. Deve ser um número múltiplo de 5
-#define LIMIT_ITERATIONS 100
+#define LIMIT_ITERATIONS 5
 // Limite de iterações para a busca local na vizinhanca (busca tabu);
 #define LIMIT_LOCAL_ITERATIONS 100
+#define SET_PATH_RELINKING true
 
 
 std::vector<std::vector<int>> triangulo_pascal({{1}});
@@ -355,6 +356,18 @@ std::vector<bool> convert_number(int n_sorteado, int quadrados_vazios, int bloco
 
 }
 
+bool is_linha_igual(const std::vector<int>& linha1, const std::vector<bool>& linha2){
+    
+    int tam_linha = linha1.size();
+    for(int i{0}; i < tam_linha; ++i){
+        if(linha1[i] != (int)linha2[i]){
+            return false;
+        }
+    }
+
+    return true;
+}
+
 
 bool linha_valida(const std::vector<bool>& linha, const std::vector<int>& linha_nonograma){
     bool retorno = true;
@@ -447,6 +460,8 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
 
     std::vector<std::vector<int>> nonograma_inicial = nonograma;
     std::vector<std::vector<int>> nonograma_vizinho;
+    std::vector<std::vector<int>> melhor_nonograma_local;
+    int best_linha_vizinho;
     int melhor_objetivo_local;
     int current_objetivo;
 
@@ -454,14 +469,16 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
 
     for(int i{0}; i < LIMIT_LOCAL_ITERATIONS; ++i){
 
-        lista_tabu.reset();
+        // lista_tabu.reset();
+        melhor_objetivo_local = INT_MAX;
 
 
         
-        melhor_objetivo_local = INT_MAX;
         // std::cout << "E aqui?" << std::endl;
 
         // Gerar os vizinhos e escolher o melhor
+        
+        // std::cout << "Melhor global gerado: " << melhor_objetivo_global << std::endl;
         for(int linha_atual{0}; linha_atual < n_linhas; ++linha_atual){
             
             nonograma_vizinho = nonograma_inicial;
@@ -497,7 +514,10 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
                     vetor_sorteado = convert_number(sorteado, quadrados_vazios, linhas[linha_atual].size(), n_colunas, linhas[linha_atual]);
 
                     if(linha_valida(vetor_sorteado, nonograma[linha_atual])){
-                        linhas_construidas.push_back(vetor_sorteado);
+                        if(!is_linha_igual(nonograma_inicial[linha_atual], vetor_sorteado)){
+
+                            linhas_construidas.push_back(vetor_sorteado);
+                        }
                     }
 
                     if(j == tamanho - 1 && linhas_construidas.empty()){
@@ -548,30 +568,44 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
 
             // GEREI O VIZINHO!!! Agora, vejo se ele é tabu e se é melhor que o melhor
             current_objetivo = funcao_objetivo(linhas, colunas, nonograma_vizinho);
+            // std::cout << "Objetivo gerado: " << current_objetivo << std::endl;
 
             // Se o melhor da vizinhanca
             if( lista_tabu.isTabu(linha_atual) && current_objetivo < melhor_objetivo_global ){
-                melhor_objetivo_local = current_objetivo;
+                if(current_objetivo < melhor_objetivo_local){
+
+                    melhor_objetivo_local = current_objetivo;
+                    melhor_nonograma_local = nonograma_vizinho;
+                    best_linha_vizinho = linha_atual;
+                }
             }
             else if(current_objetivo < melhor_objetivo_local){
                 melhor_objetivo_local = current_objetivo;
+                melhor_nonograma_local = nonograma_vizinho;
+                best_linha_vizinho = linha_atual;
             }
 
             // std::cout << "Tomate" << std::endl;
 
 
-            if(melhor_objetivo_local < melhor_objetivo_global){
-                lista_tabu.insert(linha_atual);
-                melhor_objetivo_global = current_objetivo;
-                nonograma = nonograma_vizinho;
-            }
+            
 
             // std::cout << "Lallala" << std::endl;
 
 
         }
 
+        lista_tabu.insert(best_linha_vizinho);
+        if(melhor_objetivo_local < melhor_objetivo_global){
+            melhor_objetivo_global = melhor_objetivo_local;
+            nonograma = melhor_nonograma_local;
+        }
+
+        // std::cout << "Objetivo escolhido: " << melhor_objetivo_local << std::endl;
+
         // std::cout << "Não?" << std::endl;
+
+        nonograma_inicial = melhor_nonograma_local;
 
 
         if(melhor_objetivo_global == 0){
@@ -690,6 +724,12 @@ std::vector<std::vector<int>> path_relinking(std::vector<std::vector<std::vector
         objetivo_and_idx.push_back({objetivo_nonogramas[i], i});
     }
 
+    // std::cout << "Objetivos iniciais: ";
+    // for(int i{0}; i < nonogramas.size(); ++i){
+    //     std::cout << objetivo_and_idx[i].first << " ";
+    // }
+    // std::cout << "\n";
+
     int idx1, idx2;
     for(int i{0}; i < nonogramas.size() - 1; ++i){
         int dif_min = INT_MAX;
@@ -705,9 +745,13 @@ std::vector<std::vector<int>> path_relinking(std::vector<std::vector<std::vector
 
         nonograma_result = path_relinking_dois_a_dois(nonogramas_to_be_chosen[idx2], nonogramas_to_be_chosen[idx1], objetivo_nonogramas[idx1], linhas, colunas);
         nonogramas_to_be_chosen.push_back(nonograma_result);
+        // std::cout << "Objetivo resultante entre "<< objetivo_and_idx[idx1].first << " e "<<  objetivo_and_idx[idx2].first << ": " << funcao_objetivo(linhas, colunas, nonograma_result) << std::endl; 
         objetivo_and_idx[idx1].first = INT_MAX;
         objetivo_and_idx[idx2].first = INT_MAX;
         objetivo_and_idx.push_back({funcao_objetivo(linhas, colunas, nonograma_result) ,nonogramas_to_be_chosen.size() - 1});
+
+
+
 
     }
     // for(int p{0}; p < nonogramas.size(); ++p){
@@ -721,7 +765,7 @@ std::vector<std::vector<int>> path_relinking(std::vector<std::vector<std::vector
     //     //
     //     nonograma_result = 
     // }
-    nonograma_result = path_relinking_dois_a_dois(nonogramas[0], nonogramas[1], objetivo_nonogramas[1], linhas, colunas);
+    // nonograma_result = path_relinking_dois_a_dois(nonogramas[0], nonogramas[1], objetivo_nonogramas[1], linhas, colunas);
 
     return nonograma_result;
 }
@@ -904,6 +948,7 @@ int main(){
 
 
         // Busca na vizinhança
+        objetivo_atual = funcao_objetivo(linhas, colunas, nonograma);
 
         // std::cout << "O erro foi aqui?" << std::endl;
         busca_tabu(nonograma, objetivo_atual, linhas, soma_linhas, colunas, soma_colunas, combinacoes_linhas);
@@ -918,9 +963,11 @@ int main(){
 
 
         // Se current_iteration % 5 == 4, fazer o path_relinking
+        if(SET_PATH_RELINKING){
 
-        if(current_iteration % 5 == 4){
-            nonograma = path_relinking(nonogramas, objetivo_nonogramas, linhas, soma_linhas, colunas, soma_colunas);
+            if(current_iteration % 5 == 4){
+                nonograma = path_relinking(nonogramas, objetivo_nonogramas, linhas, soma_linhas, colunas, soma_colunas);
+            }
         }
 
         // Atualizar o melhor global
