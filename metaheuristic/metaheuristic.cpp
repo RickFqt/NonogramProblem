@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 // Limite de iterações para a metaheurística. Deve ser um número múltiplo de 5
-#define LIMIT_ITERATIONS 5
+#define LIMIT_ITERATIONS 25
 // Limite de iterações para a busca local na vizinhanca (busca tabu);
 #define LIMIT_LOCAL_ITERATIONS 100
 #define SET_PATH_RELINKING true
@@ -731,23 +731,27 @@ std::vector<std::vector<int>> path_relinking(std::vector<std::vector<std::vector
     // std::cout << "\n";
 
     int idx1, idx2;
+    int c1, c2;
     for(int i{0}; i < nonogramas.size() - 1; ++i){
         int dif_min = INT_MAX;
         std::sort(objetivo_and_idx.begin(), objetivo_and_idx.end());
+
 
         for(int j{0}; j < nonogramas.size() - 1 - i; ++j){
             if(abs(objetivo_and_idx[j].first - objetivo_and_idx[j+1].first) < dif_min){
                 dif_min = abs(objetivo_and_idx[j].first - objetivo_and_idx[j+1].first);
                 idx1 = objetivo_and_idx[j].second;
                 idx2 = objetivo_and_idx[j+1].second;
+                c1 = j;
+                c2 = j+1;
             }
         }
 
         nonograma_result = path_relinking_dois_a_dois(nonogramas_to_be_chosen[idx2], nonogramas_to_be_chosen[idx1], objetivo_nonogramas[idx1], linhas, colunas);
         nonogramas_to_be_chosen.push_back(nonograma_result);
-        // std::cout << "Objetivo resultante entre "<< objetivo_and_idx[idx1].first << " e "<<  objetivo_and_idx[idx2].first << ": " << funcao_objetivo(linhas, colunas, nonograma_result) << std::endl; 
-        objetivo_and_idx[idx1].first = INT_MAX;
-        objetivo_and_idx[idx2].first = INT_MAX;
+        // std::cout << "Objetivo resultante entre "<< objetivo_and_idx[c1].first << " e "<<  objetivo_and_idx[c2].first << ": " << funcao_objetivo(linhas, colunas, nonograma_result) << std::endl; 
+        objetivo_and_idx[c1].first = INT_MAX;
+        objetivo_and_idx[c2].first = INT_MAX;
         objetivo_and_idx.push_back({funcao_objetivo(linhas, colunas, nonograma_result) ,nonogramas_to_be_chosen.size() - 1});
 
 
