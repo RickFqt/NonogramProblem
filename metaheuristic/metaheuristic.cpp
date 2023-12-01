@@ -1,9 +1,26 @@
 #include <bits/stdc++.h>
-// Limite de iterações para a metaheurística. Deve ser um número múltiplo de 5
-#define LIMIT_ITERATIONS 25
-// Limite de iterações para a busca local na vizinhanca (busca tabu);
-#define LIMIT_LOCAL_ITERATIONS 100
-#define SET_PATH_RELINKING true
+// ================================ Parâmetros para a meta-heurística no gral ================================
+
+// Limite de iterações da busca
+int  LIMIT_ITERATIONS = 5;
+// Define se usaremos ou não path-relinking a cada 5 iterações
+bool SET_PATH_RELINKING = true;
+
+// ===========================================================================================================
+
+// ================================ Parâmetros da busca tabu ================================
+
+// Limite de iterações para a busca local na vizinhanca;
+int LIMIT_LOCAL_ITERATIONS = 200;
+// Define se escolhemos o primeiro vizinho melhor que a solução corrente, ou
+// se analisamos todos os vizinhos antes de realizar uma escolha
+bool USE_PRIMEIRO_VIZINHO_MELHOR = true;
+// Define se sairemos de uma busca na vizinhança caso fiquemos "presos" em uma solução por muito tempo
+bool USE_NUMERO_REPETICOES_PERMITIDA = true;
+// Caso fiquemos "presos" esse número de iterações em uma mesma solução, paramos a busca na vizinhança
+int NUMERO_REPETICOES_PERMITIDA = 50;
+
+// ==========================================================================================
 
 
 std::vector<std::vector<int>> triangulo_pascal({{1}});
@@ -446,18 +463,27 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
     int melhor_objetivo_local;
     int current_objetivo;
 
+    int reps_melhor_solucao = 0;
+
 
     for(int i{0}; i < LIMIT_LOCAL_ITERATIONS; ++i){
 
         // lista_tabu.reset();
         melhor_objetivo_local = INT_MAX;
 
+        std::vector<int> sequencia_linhas;
+
+        for(int i{0}; i < n_linhas; ++i){
+            sequencia_linhas.push_back(i);
+        }
+        std::random_shuffle(sequencia_linhas.begin(), sequencia_linhas.end());
 
 
+        int linha_atual;
         // Gerar os vizinhos e escolher o melhor
-        
-        for(int linha_atual{0}; linha_atual < n_linhas; ++linha_atual){
+        for(int numero_vizinho{0}; numero_vizinho < n_linhas; ++numero_vizinho){
             
+            linha_atual = sequencia_linhas[numero_vizinho];
             nonograma_vizinho = nonograma_inicial;
 
             // Fazer 100 construcoes para a linha corretamente sem se preocupar com as colunas
@@ -552,6 +578,14 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
                 best_linha_vizinho = linha_atual;
             }
 
+            if(USE_PRIMEIRO_VIZINHO_MELHOR){
+
+                // Se achou algo melhor que o global, PARE IMEDIATAMENTE
+                if(current_objetivo < melhor_objetivo_global){
+                    break;
+                }
+            }
+
 
         }
 
@@ -559,6 +593,15 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
         if(melhor_objetivo_local < melhor_objetivo_global){
             melhor_objetivo_global = melhor_objetivo_local;
             nonograma = melhor_nonograma_local;
+            reps_melhor_solucao = 0;
+        }
+        else{
+            reps_melhor_solucao++;
+        }
+
+        // Caso estivermos "presos" em uma solução por muito tempo, paramos de olhar os vizinhos
+        if(USE_NUMERO_REPETICOES_PERMITIDA && reps_melhor_solucao >= NUMERO_REPETICOES_PERMITIDA){
+            break;
         }
 
 
@@ -730,6 +773,9 @@ int main(){
         // Calcula a soma de colunas
         soma_colunas[i] = soma_vetor(colunas[i]);
     }
+
+    /// ============================== TIMER COMEÇA ================================================
+    auto start = std::chrono::steady_clock::now();
 
 
     // Matriz do nonograma
@@ -906,10 +952,16 @@ int main(){
 
     }
 
+    auto end = std::chrono::steady_clock::now();
+    /// ============================== TIMER TERMINA ================================================
+
+    auto diff( end - start );
+    double elapsed_time_mean = (std::chrono::duration <double, std::milli> (diff).count());
+
     // Print do nonograma resultante
     for(int i{0}; i < n_linhas; ++i){
         for(int j{0}; j < n_colunas; ++j){
-            if(nonograma[i][j] == 1){
+            if(nonograma_best[i][j] == 1){
                 std::cout << "O";
             }
             else{
@@ -924,6 +976,8 @@ int main(){
     if(objetivo_final == 0){
         std::cout << "Solução Correta!" << std::endl;
     }
+
+    std::cout << "\nTempo gasto: " << std::to_string(elapsed_time_mean) << "ms." << std::endl;
 
 
 
