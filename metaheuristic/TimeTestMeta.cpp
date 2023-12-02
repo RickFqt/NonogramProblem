@@ -3,7 +3,7 @@
 // ================================ Parâmetros para a meta-heurística no gral ================================
 
 // Limite de iterações da busca
-int  LIMIT_ITERATIONS = 5;
+int  LIMIT_ITERATIONS = 10;
 // Define se usaremos ou não path-relinking a cada 5 iterações
 bool SET_PATH_RELINKING = true;
 
@@ -12,7 +12,7 @@ bool SET_PATH_RELINKING = true;
 // ================================ Parâmetros da busca tabu ================================
 
 // Limite de iterações para a busca local na vizinhanca;
-int LIMIT_LOCAL_ITERATIONS = 200;
+int LIMIT_LOCAL_ITERATIONS = 100;
 // Define se escolhemos o primeiro vizinho melhor que a solução corrente, ou
 // se analisamos todos os vizinhos antes de realizar uma escolha
 bool USE_PRIMEIRO_VIZINHO_MELHOR = true;
