@@ -2,7 +2,7 @@
 // ================================ Parâmetros para a meta-heurística no gral ================================
 
 // Limite de iterações da busca
-int  LIMIT_ITERATIONS = 5;
+int  LIMIT_ITERATIONS = 10;
 // Define se usaremos ou não path-relinking a cada 5 iterações
 bool SET_PATH_RELINKING = true;
 
@@ -11,14 +11,14 @@ bool SET_PATH_RELINKING = true;
 // ================================ Parâmetros da busca tabu ================================
 
 // Limite de iterações para a busca local na vizinhanca;
-int LIMIT_LOCAL_ITERATIONS = 200;
+int LIMIT_LOCAL_ITERATIONS = 60;
 // Define se escolhemos o primeiro vizinho melhor que a solução corrente, ou
 // se analisamos todos os vizinhos antes de realizar uma escolha
 bool USE_PRIMEIRO_VIZINHO_MELHOR = true;
 // Define se sairemos de uma busca na vizinhança caso fiquemos "presos" em uma solução por muito tempo
 bool USE_NUMERO_REPETICOES_PERMITIDA = true;
 // Caso fiquemos "presos" esse número de iterações em uma mesma solução, paramos a busca na vizinhança
-int NUMERO_REPETICOES_PERMITIDA = 50;
+int NUMERO_REPETICOES_PERMITIDA = 40;
 
 // ==========================================================================================
 
@@ -491,7 +491,7 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
             // Escolher a linha construída que menos causa conflito com as colunas
             int quadrados_vazios = n_colunas - soma_linhas[linha_atual]; // Número de quadrados vazios necessários nessa linha
             int combinao = combinacoes_linhas[linha_atual];
-            int tamanho = std::min(combinao, 100);
+            int tamanho = std::min(combinao, 10);
             std::vector<std::vector<bool>> linhas_construidas;
 
             if(soma_linhas[linha_atual] != 0){
