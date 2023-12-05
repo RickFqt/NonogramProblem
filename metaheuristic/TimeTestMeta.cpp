@@ -12,7 +12,7 @@ bool SET_PATH_RELINKING = true;
 // ================================ Parâmetros da busca tabu ================================
 
 // Limite de iterações para a busca local na vizinhanca;
-int LIMIT_LOCAL_ITERATIONS = 100;
+int LIMIT_LOCAL_ITERATIONS = 60;
 // Define se escolhemos o primeiro vizinho melhor que a solução corrente, ou
 // se analisamos todos os vizinhos antes de realizar uma escolha
 bool USE_PRIMEIRO_VIZINHO_MELHOR = true;
@@ -497,7 +497,7 @@ void busca_tabu(std::vector<std::vector<int>>& nonograma, int &melhor_objetivo_g
             // Escolher a linha construída que menos causa conflito com as colunas
             int quadrados_vazios = n_colunas - soma_linhas[linha_atual]; // Número de quadrados vazios necessários nessa linha
             int combinao = combinacoes_linhas[linha_atual];
-            int tamanho = std::min(combinao, 100);
+            int tamanho = std::min(combinao, 10);
             std::vector<std::vector<bool>> linhas_construidas;
 
             if(soma_linhas[linha_atual] != 0){
@@ -749,19 +749,19 @@ std::vector<std::vector<int>> path_relinking(std::vector<std::vector<std::vector
 int main(){
     std::srand ( unsigned ( std::time(0) ) );
 
-    std::string testCases[1] = {
+    std::string testCases[12] = {
         "./inputs/dancer.txt",
-        // "./inputs/cat.txt",
-        // "./inputs/skid.txt",
-        // "./inputs/bucks.txt",
-        // "./inputs/edge.txt",
-        // "./inputs/smoke.txt",
-        // "./inputs/knot.txt",
-        // "./inputs/swing.txt",
-        // "./inputs/mum.txt",
-        // "./inputs/dicap.txt",
-        // "./inputs/tragic.txt",
-        // "./inputs/merka.txt",
+        "./inputs/cat.txt",
+        "./inputs/skid.txt",
+        "./inputs/bucks.txt",
+        "./inputs/edge.txt",
+        "./inputs/smoke.txt",
+        "./inputs/knot.txt",
+        "./inputs/swing.txt",
+        "./inputs/mum.txt",
+        "./inputs/dicap.txt",
+        "./inputs/tragic.txt",
+        "./inputs/merka.txt",
         // "./inputs/petro.txt",
         // "./inputs/m&m.txt",
         // "./inputs/signed.txt",
@@ -772,7 +772,7 @@ int main(){
         // "./inputs/karate.txt"
     };
 
-    std::string outputs[10] = {
+    std::string outputs[12] = {
         "outputs/outdancer.txt",
         "outputs/outcat.txt",
         "outputs/outskid.txt",
@@ -783,8 +783,8 @@ int main(){
         "outputs/outswing.txt",
         "outputs/outmum.txt",
         "outputs/outdicap.txt",
-        // "outputs/outtragic.txt",
-        // "outputs/outmerka.txt",
+        "outputs/outtragic.txt",
+        "outputs/outmerka.txt",
         // "./inputs/petro.txt",
         // "./inputs/m&m.txt",
         // "./inputs/signed.txt",
@@ -797,7 +797,7 @@ int main(){
 
     std::ofstream out_file;
 
-    for(int times = 0; times < 1; ++times){
+    for(int times = 0; times < 12; ++times){
         
 
 
@@ -1090,6 +1090,7 @@ int main(){
         elapsed_time_mean = (double)elapsed_time_mean/(double)TEST_REPETITIONS;
         media_objetivo = (double)media_objetivo/(double)TEST_REPETITIONS;
 
+        out_file << "# Teste de tempo para " << testCases[times] << (SET_PATH_RELINKING? " COM" : " SEM") << " Path Relinking\n";
         out_file << "# Tempo medio : " << std::to_string(elapsed_time_mean) << "ms | Tempo min: " << std::to_string(time_min) << "ms | Tempo max: " << std::to_string(time_max) <<"ms | Média objetivo: " << media_objetivo <<" | Min objetivo: " << objetivo_min <<" | Max objetivo: " << objetivo_max << "\n\n";
     
         out_file.close();
